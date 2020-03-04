@@ -2,9 +2,27 @@
 
 {% block content %}
 
-  </form>
     <div id="window_table">
-    asdasd
+    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Number of row</th>
+                {% for col in columns %}
+                <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                <td>{{ forloop.counter }}</td>
+                {% for value in row.values %}
+                  <td>{{value}}</td>
+                {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     </div>
 
 {#  <p><a href="{% url 'home' %}">Return to home</a></p>#}

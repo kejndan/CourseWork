@@ -461,7 +461,7 @@ class GeneticBase(object) :
             self.add_info(ind)
 
         for number_generation in range(self.n_generations) :
-            print('Поколение ', number_generation, ' ', '!' * 100)
+            yield 'Поколение ' + str(number_generation) + ' ' +'!'
             pipeline_list_population = self._toolbox.compile(self.population)
             print('Началось оценка популяции')
             s = time()
@@ -574,7 +574,9 @@ if __name__ == '__main__':
     s = time()
     GB = GeneticClustering(population_size=30, n_generations=2, name=name)
     GB.cv = 3
-    GB.fit(x_train,y_train)
+    k = GB.fit(x_train,y_train)
+    for t in k:
+        print(t)
     GB.score(x_test,y_test,time()-s)
     print(time()-s)
     # print(p)

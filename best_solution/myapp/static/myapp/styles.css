@@ -4,3 +4,9 @@
     background-color: darkkhaki;
     overflow: auto;
 }
+#window_output{
+    width:500px;
+    height:500px;
+    background-color: #506fbd;
+    overflow: auto;
+}

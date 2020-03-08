@@ -3,8 +3,10 @@ from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
 # Imaginary function to handle an uploaded file.
-from handlers.handlers_for_site import handle_uploaded_file, file_to_alg
+from .tasks import handle_uploaded_file, file_to_alg
 from best_solution.settings import MEDIA_ROOT
+from threading import Thread
+
 
 def upload_file(request):
     if request.method == 'POST':
@@ -19,7 +21,16 @@ def upload_file(request):
 
 def processing(request):
     if request.method == 'GET':
-        data = pd.read_csv(MEDIA_ROOT+'\data.csv')
-        return render(request, 'myapp/processing.html', {'columns': data.columns, 'rows': data.to_dict('records')})
+        df = pd.read_csv(MEDIA_ROOT+'\data.csv')
+        # file_to_alg(MEDIA_ROOT + '\data.csv')
+        Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
+        # print(res.get(timeout=10.0))
+        return render(request, 'myapp/processing.html',
+                      {'columns' : df.columns, 'rows' : df.to_dict('records')})
+
+def update(request):
+    if request.method == 'GET':
+        if request.is_ajax():
+            pass
 
 

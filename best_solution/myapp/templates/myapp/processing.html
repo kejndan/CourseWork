@@ -24,6 +24,11 @@
         </tbody>
     </table>
     </div>
+    <div id="window_output">
+        {% for stat in status %}
+            <p><b>{{ stat }}</b></p>
+        {% endfor %}
+    </div>
 
 {#  <p><a href="{% url 'home' %}">Return to home</a></p>#}
 {% endblock %}

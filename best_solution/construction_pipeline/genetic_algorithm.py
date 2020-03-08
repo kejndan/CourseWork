@@ -460,25 +460,33 @@ class GeneticBase(object) :
         # добавляение информации об индивидах
         for ind in self.population :
             self.add_info(ind)
-        f = open(MEDIA_ROOT+'output.txt', 'w')
+        # with open(MEDIA_ROOT+'\output.txt', 'w') as f:
+            # f = open(MEDIA_ROOT+'\output.txt', 'w')
+
         for number_generation in range(self.n_generations) :
-            f.write('Поколение ' + str(number_generation) + ' ' +'!')
+            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+                f.write('Поколение ' + str(number_generation) + ' ' +'!\n')
             pipeline_list_population = self._toolbox.compile(self.population)
-            f.write('Началось оценка популяции')
+            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+                f.write('Началось оценка популяции\n')
             s = time()
-            self._evaluation_individuals(selff.population, pipeline_list_population, features, targets)
-            f.write('Оценка окончена. Время оценки {0}'.format(time() - s))
-            f.write('Началось создание потомков')
+            self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
+            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+                f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
+                f.write('Началось создание потомков\n')
             s = time()
             offspring = self._create_offspring(self.population, features, targets, time_info=False)
-            f.write('Потомки созданы. Время создания '.format(time() - s))
+            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+                f.write('Потомки созданы. Время создания {0}\n'.format(time() - s))
             pipeline_list_offspring = self._toolbox.compile(offspring)
-            f.write('Началось оценка популяции')
+            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+                f.write('Началось оценка популяции\n')
             s = time()
             self._evaluation_individuals(offspring, pipeline_list_offspring, features, targets)
-            f.write('Оценка окончена. Время оценки {0}'.format(time() - s))
+            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+                f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
             self.population[:] = self._toolbox.select(self.population + offspring, self.population_size)
-        f.close()
+
         return self.population[0], self.individual_to_sklearn(self.population[0])
 
     def score(self, features_test, targets_test, time_work) :

@@ -42,4 +42,4 @@ function timer() {
 // reader.onerror = function(event) {
 //     console.error("Файл не может быть прочитан! код " + event.target.error.code);
 // };
-setInterval(timer, 5000)
+setInterval(timer, 2000)

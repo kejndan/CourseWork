@@ -22,5 +22,3 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('myapp.urls'))
 ]
-from django.conf.urls.static import  static
-urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)

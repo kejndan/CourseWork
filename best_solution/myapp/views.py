@@ -3,15 +3,17 @@ from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
 # Imaginary function to handle an uploaded file.
-from handlers.handlers_for_site import file_to_alg, handle_uploaded_file
+from handlers.handlers_for_site import file_to_alg, handle_uploaded_file, remove_folder_contents
 from best_solution.settings import MEDIA_ROOT
 from threading import Thread
+
 
 
 def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
+            remove_folder_contents(MEDIA_ROOT)
             handle_uploaded_file(request.FILES['file'])
             return HttpResponseRedirect('/processing/')
     else:
@@ -22,7 +24,7 @@ def upload_file(request):
 def processing(request):
     if request.method == 'GET':
         df = pd.read_csv(MEDIA_ROOT+'\data.csv')
-        Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
+        proc = Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
         return render(request, 'myapp/processing.html',
                       {'columns' : df.columns, 'rows' : df.to_dict('records')})
 

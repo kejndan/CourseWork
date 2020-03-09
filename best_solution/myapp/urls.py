@@ -3,7 +3,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('index/', views.upload_file, name='index'),
+    path('', views.upload_file, name='index'),
     path('processing/', views.processing)
 ]
 from django.conf.urls.static import static

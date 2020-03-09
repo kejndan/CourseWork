@@ -3,10 +3,12 @@
     height:500px;
     background-color: darkkhaki;
     overflow: auto;
+    float: left;
 }
 #window_output{
     width:500px;
     height:500px;
     background-color: #506fbd;
     overflow: auto;
+    float: left;
 }

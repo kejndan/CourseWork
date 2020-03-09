@@ -460,9 +460,9 @@ class GeneticBase(object) :
         # добавляение информации об индивидах
         for ind in self.population :
             self.add_info(ind)
-        # with open(MEDIA_ROOT+'\output.txt', 'w') as f:
-            # f = open(MEDIA_ROOT+'\output.txt', 'w')
 
+        with open(MEDIA_ROOT+'\output.txt', 'w') as f:
+            f.write('')
         for number_generation in range(self.n_generations) :
             with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
                 f.write('Поколение ' + str(number_generation) + ' ' +'!\n')

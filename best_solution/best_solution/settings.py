@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-
+from multiprocessing import Process
+from handlers.core import file_to_alg
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -123,7 +124,7 @@ STATIC_URL = '/static/'
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
-
+THREAD = Process(target=file_to_alg, args=(MEDIA_ROOT,'\data.csv',))
 MEDIA_URL = '/media/'
 
 

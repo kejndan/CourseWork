@@ -20,7 +20,7 @@ import warnings
 from sklearn.metrics import accuracy_score
 from datetime import datetime
 from func_timeout import func_timeout, FunctionTimedOut
-from best_solution.settings import MEDIA_ROOT
+
 
 CALLABLES = (types.FunctionType, types.MethodType)
 
@@ -40,7 +40,7 @@ def random_value_from(obj, name) :
 class GeneticBase(object) :
     def __init__(self, type_explore, cv_func, score_func, n_generations, population_size, offspring_size, max_height,
                  min_height,
-                 probability_mutation, probability_mate) :
+                 probability_mutation, probability_mate, path) :
         self.type_explore = type_explore
         self.n_generations = n_generations
         self.population_size = population_size
@@ -57,12 +57,14 @@ class GeneticBase(object) :
         self.time_list = [0]
         self.cv_func = cv_func
         self.score_func = score_func
+        self.path = path
         if self.type_explore == 'classification' :
             self.terminal_models = classification_models
         elif self.type_explore == 'regression' :
             self.terminal_models = regression_models
         else :
             self.terminal_models = clustering_models
+            
 
     def _create_primitives_and_terminals_storage(self) :
         if self._primitive_storage is None :
@@ -461,29 +463,29 @@ class GeneticBase(object) :
         for ind in self.population :
             self.add_info(ind)
 
-        with open(MEDIA_ROOT+'\output.txt', 'w') as f:
+        with open(self.path+'\output.txt', 'w') as f:
             f.write('')
         for number_generation in range(self.n_generations) :
-            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
                 f.write('Поколение ' + str(number_generation) + ' ' +'!\n')
             pipeline_list_population = self._toolbox.compile(self.population)
-            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
                 f.write('Началось оценка популяции\n')
             s = time()
             self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
-            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
                 f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
                 f.write('Началось создание потомков\n')
             s = time()
             offspring = self._create_offspring(self.population, features, targets, time_info=False)
-            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
                 f.write('Потомки созданы. Время создания {0}\n'.format(time() - s))
             pipeline_list_offspring = self._toolbox.compile(offspring)
-            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
                 f.write('Началось оценка популяции\n')
             s = time()
             self._evaluation_individuals(offspring, pipeline_list_offspring, features, targets)
-            with open(MEDIA_ROOT + '\output.txt', 'a', encoding="UTF-8") as f:
+            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
                 f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
             self.population[:] = self._toolbox.select(self.population + offspring, self.population_size)
 
@@ -536,26 +538,26 @@ class GeneticBase(object) :
 
 class GeneticClassification(GeneticBase) :
     def __init__(self, n_generations=5, population_size=100, offspring_size=None, max_height=3, min_height=1,
-                 probability_mutation=0.7, probability_mate=0.3, name=None) :
+                 probability_mutation=0.7, probability_mate=0.3, name=None, path=None) :
         self.type_explore = 'classification'
         self.cv_func = 'accuracy'
         self.score_func = accuracy_score
         self.name = name
         super().__init__(self.type_explore, self.cv_func, self.score_func, n_generations, population_size,
                          offspring_size, max_height, min_height,
-                         probability_mutation, probability_mate)
+                         probability_mutation, probability_mate, path)
 
 
 class GeneticRegression(GeneticBase) :
     def __init__(self, n_generations=5, population_size=100, offspring_size=None, max_height=3, min_height=1,
-                 probability_mutation=0.7, probability_mate=0.3, name=None) :
+                 probability_mutation=0.7, probability_mate=0.3, name=None, path=None) :
         self.type_explore = 'regression'
         self.cv_func = 'neg_mean_squared_error'
         self.score_func = mean_squared_error
         self.name = name
         super().__init__(self.type_explore, self.cv_func, self.score_func, n_generations, population_size,
                          offspring_size, max_height, min_height,
-                         probability_mutation, probability_mate)
+                         probability_mutation, probability_mate, path)
 
 
 class GeneticClustering(GeneticBase) :

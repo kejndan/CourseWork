@@ -3,8 +3,8 @@ from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
 # Imaginary function to handle an uploaded file.
-from handlers.handlers_for_site import file_to_alg, handle_uploaded_file, remove_folder_contents
-from best_solution.settings import MEDIA_ROOT
+from handlers.handlers_for_site import handle_uploaded_file, remove_folder_contents
+from best_solution.settings import MEDIA_ROOT, THREAD
 from threading import Thread
 
 
@@ -36,7 +36,14 @@ def processing(request):
 
 def working(request):
     if request.method == 'POST':
-        proc = Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
+        print(THREAD)
+        if THREAD.is_alive():
+            THREAD.terminate()
+
+        else:
+            THREAD.start()
+            print(THREAD)
+        # proc = Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
         # return None
         return render(request, 'myapp/processing.html',

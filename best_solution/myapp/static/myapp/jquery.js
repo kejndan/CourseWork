@@ -29,4 +29,48 @@ function timer() {
     loadXMLDoc()
 };
 window.stopIndex = 0;
-setInterval(timer, 2000)
+// // function startUpdateOutput()
+// // {
+// //   document.getElementById("start_btn").clicked = true;
+// //   console.log('sadasdas');
+// //
+// // }
+// // if (document.getElementById("start_btn").clicked === true) {
+// //   setInterval(timer, 2000);
+// // }
+// //
+// alert(src);
+// $("#start_btn").on('click', function(event) {
+//   // Отменяем отправку по нажатию.
+//   event.preventDefault();
+//
+//   // Тут выполняем нужные действия:
+//   // инициируем нажатие на объект #savers.
+//   $("#start_btn").trigger('click');
+//
+//   // Отправляем форму.
+//   // $(this).closest('form').submit();
+// });
+// // // document.getElementById('bot').onclick =
+$('#form').submit(function(e){
+//     e.preventDefault();
+//     $.post('/processing/', $(this).serialize(), function (data) {
+//        document.getElementById('start_btn').value = 'RUNNING';
+//     });
+// var datastring = $form.serialize();
+    e.preventDefault();
+    alert('sad')
+    $.ajax({  //Call ajax function sending the option loaded
+      url: "/processing/",  //This is the url of the ajax view where you make the search
+      type: 'POST',
+      data: datastring,
+        success: function() {
+            }
+        })
+    });
+console.log(window.location.pathname);
+if (window.location.pathname === '/processing/working') {
+    setInterval(timer, 2000);
+    console.log('qq');
+}
+

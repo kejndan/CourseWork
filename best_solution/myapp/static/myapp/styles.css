@@ -10,5 +10,9 @@
     height:500px;
     background-color: #506fbd;
     overflow: auto;
+    /*float: left;*/
+}
+.btn{
     float: left;
+    padding: 15px 32px;
 }

@@ -3,6 +3,11 @@
 
 {% block content %}
     <script src="{% static 'myapp/jquery.js'%}"></script>
+    <script>
+        var url = "{% static '' %}";
+    </script>
+
+
     <div id="window_table">
     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
         <thead>
@@ -30,6 +35,11 @@
             <p><b>{{ stat }}</b></p>
         {% endfor %}
     </div>
+    <form action="working" method="post" id="form">
+    {% csrf_token %}
+        <input type="submit" class="btn" value="RUN" name="mybtn" id="start_btn">
+    </form>
+
 
 {#  <p><a href="{% url 'home' %}">Return to home</a></p>#}
 {% endblock %}

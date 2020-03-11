@@ -4,7 +4,8 @@ from . import views
 
 urlpatterns = [
     path('', views.upload_file, name='index'),
-    path('processing/', views.processing)
+    path('processing/', views.processing),
+    path('processing/working', views.working)
 ]
 from django.conf.urls.static import static
 from best_solution.settings import MEDIA_ROOT, MEDIA_URL

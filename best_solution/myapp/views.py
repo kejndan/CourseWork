@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
@@ -6,6 +6,7 @@ import pandas as pd
 from handlers.handlers_for_site import file_to_alg, handle_uploaded_file, remove_folder_contents
 from best_solution.settings import MEDIA_ROOT
 from threading import Thread
+
 
 
 
@@ -24,10 +25,22 @@ def upload_file(request):
 def processing(request):
     if request.method == 'GET':
         df = pd.read_csv(MEDIA_ROOT+'\data.csv')
+        return render(request, 'myapp/processing.html',
+                      {'columns' : df.columns, 'rows' : df.to_dict('records')})
+    elif request.method == 'POST':
         proc = Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
+        df = pd.read_csv(MEDIA_ROOT + '\data.csv')
+        # return None
         return render(request, 'myapp/processing.html',
                       {'columns' : df.columns, 'rows' : df.to_dict('records')})
 
+def working(request):
+    if request.method == 'POST':
+        proc = Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
+        df = pd.read_csv(MEDIA_ROOT + '\data.csv')
+        # return None
+        return render(request, 'myapp/processing.html',
+                      {'columns' : df.columns, 'rows' : df.to_dict('records')})
 def update(request):
     if request.method == 'GET':
         if request.is_ajax():

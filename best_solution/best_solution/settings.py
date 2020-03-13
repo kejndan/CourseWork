@@ -124,7 +124,7 @@ STATIC_URL = '/static/'
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
-THREAD = Process(target=file_to_alg, args=(MEDIA_ROOT,'\data.csv',))
+THREAD = [Process(target=file_to_alg, args=(MEDIA_ROOT,'\data.csv',))]
 MEDIA_URL = '/media/'
 
 

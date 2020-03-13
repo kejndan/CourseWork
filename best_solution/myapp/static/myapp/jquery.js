@@ -70,7 +70,11 @@ $('#form').submit(function(e){
     });
 console.log(window.location.pathname);
 if (window.location.pathname === '/processing/working') {
+    document.addEventListener("DOMContentLoaded", function(event) {
+    document.getElementById("stop_btn").disabled = 0;
+    // document.getElementById("start_btn").disabled = 1;
+    });
     setInterval(timer, 2000);
-    console.log('qq');
+
 }
 

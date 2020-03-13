@@ -37,7 +37,8 @@
     </div>
     <form action="working" method="post" id="form">
     {% csrf_token %}
-        <input type="submit" class="btn" value="RUN" name="mybtn" id="start_btn">
+        <input type="submit" class="btn" value="RUN" id="start_btn">
+        <input type="submit" class="btn" value="STOP" id="stop_btn" disabled>
     </form>
 
 

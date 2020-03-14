@@ -8,7 +8,7 @@ from handlers.handlers_for_site import handle_uploaded_file, remove_folder_conte
 from best_solution.settings import MEDIA_ROOT, THREAD
 from threading import Thread
 from multiprocessing import Process
-from handlers.core import file_to_alg
+from handlers.core import algorithm_manager
 import os
 from django.core import serializers
 
@@ -45,9 +45,8 @@ def working(request):
         else:
             if os.path.isfile(MEDIA_ROOT+'\output.txt') :
                 os.remove(MEDIA_ROOT+'\output.txt')
-            THREAD[0] = Process(target=file_to_alg, args=(MEDIA_ROOT, '\data.csv',))
+            THREAD[0] = Process(target=algorithm_manager, args=(MEDIA_ROOT, '\data.csv',request.POST.get("type_func"),))
             THREAD[0].start()
-            print(THREAD)
         # proc = Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
         # return None

@@ -1,11 +1,12 @@
 Pipeline 1
-sklearn.preprocessing.MaxAbsScaler {'name_transform': 'sklearn.preprocessing.MaxAbsScaler', 'type_transform': 'preprocessing'}
-sklearn.neighbors.KNeighborsRegressor {'n_neighbors': 1, 'name_transform': 'sklearn.neighbors.KNeighborsRegressor', 'p': 1, 'type_transform': 'regression', 'weights': 'distance'}
-Ошибка 0.44579138058064766
+sklearn.preprocessing.PolynomialFeatures {'degree': 2, 'include_bias': False, 'interaction_only': False, 'name_transform': 'sklearn.preprocessing.PolynomialFeatures', 'type_transform': 'preprocessing'}
+sklearn.linear_model.LassoLarsCV {'name_transform': 'sklearn.linear_model.LassoLarsCV', 'normalize': False, 'type_transform': 'regression'}
+Ошибка 0.36602414942286454
 Pipeline 2
-sklearn.neighbors.KNeighborsRegressor {'n_neighbors': 1, 'name_transform': 'sklearn.neighbors.KNeighborsRegressor', 'p': 1, 'type_transform': 'regression', 'weights': 'distance'}
-Ошибка 0.40550144959666906
+sklearn.preprocessing.PolynomialFeatures {'degree': 2, 'include_bias': False, 'interaction_only': False, 'name_transform': 'sklearn.preprocessing.PolynomialFeatures', 'type_transform': 'preprocessing'}
+sklearn.linear_model.LassoLarsCV {'name_transform': 'sklearn.linear_model.LassoLarsCV', 'normalize': False, 'type_transform': 'regression'}
+Ошибка 0.36602414942286454
 Pipeline 3
 sklearn.preprocessing.PolynomialFeatures {'degree': 2, 'include_bias': False, 'interaction_only': False, 'name_transform': 'sklearn.preprocessing.PolynomialFeatures', 'type_transform': 'preprocessing'}
-sklearn.ensemble.AdaBoostRegressor {'learning_rate': 0.01, 'loss': 'linear', 'n_estimators': 100, 'name_transform': 'sklearn.ensemble.AdaBoostRegressor', 'type_transform': 'regression'}
-Ошибка 0.4495627161475427
+sklearn.linear_model.LassoLarsCV {'name_transform': 'sklearn.linear_model.LassoLarsCV', 'normalize': False, 'type_transform': 'regression'}
+Ошибка 0.36602414942286454

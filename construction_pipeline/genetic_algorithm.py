@@ -465,16 +465,18 @@ class GeneticBase(object) :
 
         with open(self.path+'\output.txt', 'w') as f:
             f.write('')
+        pipeline_list_population = self._toolbox.compile(self.population)
+        self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
         for number_generation in range(self.n_generations) :
             with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
                 f.write('Поколение ' + str(number_generation) + ' ' +'!\n')
-            pipeline_list_population = self._toolbox.compile(self.population)
+            # pipeline_list_population = self._toolbox.compile(self.population)
+            # with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
+            #     f.write('Началось оценка популяции\n')
+            # s = time()
+            #
             with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
-                f.write('Началось оценка популяции\n')
-            s = time()
-            self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
-            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
-                f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
+                # f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
                 f.write('Началось создание потомков\n')
             s = time()
             offspring = self._create_offspring(self.population, features, targets, time_info=False)
@@ -516,23 +518,24 @@ class GeneticBase(object) :
                 pass
         learned_pipelines = sorted(learned_pipelines, key=lambda x : x[1], reverse=True)
         error_list = []
-        if self.type_explore == 'regression':
-            for number in range(3):
+        for number in range(3) :
+            if self.type_explore == 'regression':
                 fitted_pipeline = pipeline_list_population[learned_pipelines[number][0]][1].fit(self.features_train,
                                                                                        self.targets_train)
                 err = self.score_func(y_test, fitted_pipeline.predict(x_test)) ** (1 / 2)
-                error_list.append(err)
-        elif self.type_explore == 'clustering' :
-            # fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train)
-            err = sklearn.metrics.davies_bouldin_score(x_test, pipeline[1].fit_predict(x_test))
-        else :
-            fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train,
-                                                                                       self.targets_train)
-            err = self.score_func(y_test, fitted_pipeline.predict(x_test))
+
+            elif self.type_explore == 'clustering' :
+                # fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train)
+                err = sklearn.metrics.davies_bouldin_score(x_test, pipeline[1].fit_predict(x_test))
+            else :
+                fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train,
+                                                                                           self.targets_train)
+                err = self.score_func(y_test, fitted_pipeline.predict(x_test))
+            error_list.append(err)
 
         print('Error', error_list)
-        output_inform[0].append(err)
-        output_inform[1].append(time_work)
+        # output_inform[0].append(err)
+        # output_inform[1].append(time_work)
         # print(learned_pipelines)
         f = open(self.path + '\\results.txt', 'w')
         for number in range(3):

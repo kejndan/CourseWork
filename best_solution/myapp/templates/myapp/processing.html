@@ -37,9 +37,9 @@
     </div>
     <form action="working" method="post" id="form">
     {% csrf_token %}
-        <input type="radio" name="type_func" value="regr" checked>Regres
-        <input type="radio" name="type_func" value="clas">Class
-        <input type="radio" name="type_func" value="clus">Clust
+        <input type="radio" name="type_func" value="regression" checked>Regres
+        <input type="radio" name="type_func" value="classification">Class
+        <input type="radio" name="type_func" value="clustering">Clust
         <input type="submit" class="btn" value="RUN" id="start_btn">
         <input type="submit" class="btn" value="STOP" id="stop_btn" disabled>
     </form>

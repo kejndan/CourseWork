@@ -32,15 +32,13 @@ def processing(request):
         return render(request, 'myapp/processing.html',
                       {'columns' : df.columns, 'rows' : df.to_dict('records')})
     elif request.method == 'POST':
-        proc = Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
-        # return None
         return render(request, 'myapp/processing.html',
                       {'columns' : df.columns, 'rows' : df.to_dict('records')})
 
 def working(request):
     if request.method == 'POST':
-        print(THREAD)
+        print(request.POST.get("type_func"))
         if THREAD[0].is_alive():
             THREAD[0].terminate()
             # THREAD[0] = Process(target=file_to_alg, args=(MEDIA_ROOT,'\data.csv',))
@@ -58,9 +56,5 @@ def working(request):
 def ajax_request(request):
     f = open(MEDIA_ROOT + '\\results.txt', 'r')
     return render(request, 'myapp/result.html', {'file': f.read().split('\n')})
-
-# def result(request, file):
-#     print('dasda')
-#     return render(request, 'myapp/result.html')
 
 

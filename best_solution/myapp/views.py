@@ -1,4 +1,5 @@
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.urls import reverse
 from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
@@ -9,6 +10,7 @@ from threading import Thread
 from multiprocessing import Process
 from handlers.core import file_to_alg
 import os
+from django.core import serializers
 
 
 
@@ -41,10 +43,11 @@ def working(request):
         print(THREAD)
         if THREAD[0].is_alive():
             THREAD[0].terminate()
-            THREAD[0] = Process(target=file_to_alg, args=(MEDIA_ROOT,'\data.csv',))
+            # THREAD[0] = Process(target=file_to_alg, args=(MEDIA_ROOT,'\data.csv',))
         else:
             if os.path.isfile(MEDIA_ROOT+'\output.txt') :
                 os.remove(MEDIA_ROOT+'\output.txt')
+            THREAD[0] = Process(target=file_to_alg, args=(MEDIA_ROOT, '\data.csv',))
             THREAD[0].start()
             print(THREAD)
         # proc = Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
@@ -52,9 +55,12 @@ def working(request):
         # return None
         return render(request, 'myapp/processing.html',
                       {'columns' : df.columns, 'rows' : df.to_dict('records')})
-def update(request):
-    if request.method == 'GET':
-        if request.is_ajax():
-            pass
+def ajax_request(request):
+    f = open(MEDIA_ROOT + '\\results.txt', 'r')
+    return render(request, 'myapp/result.html', {'file': f.read().split('\n')})
+
+# def result(request, file):
+#     print('dasda')
+#     return render(request, 'myapp/result.html')
 
 

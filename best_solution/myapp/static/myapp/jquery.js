@@ -14,9 +14,20 @@ xmlhttp.onreadystatechange=function()
   if (xmlhttp.readyState==4 && xmlhttp.status==200)
     {
       var arr = xmlhttp.responseText.split(/\r?\n/);
-      console.log(arr);
       for (let i=window.stopIndex; i<arr.length; i++){
-          document.getElementById("window_output").innerHTML += '<p>'+arr[i]+'</p>';
+          if (arr[i] === '##END##'){
+    //               $.ajax({  //Call ajax function sending the option loaded
+    //                     url: "/processing/ajax_request",  //This is the url of the ajax view where you make the search
+    //                     type: 'GET',
+    //                     success: function(data) {
+    //                             if (data.success) {
+    //                             window.location.href = data.url;
+    // }
+            window.location.href = 'ajax_request';
+            }
+    //     })}
+          else{
+          document.getElementById("window_output").innerHTML += '<p>'+arr[i]+'</p>';}
       }
       window.stopIndex=arr.length-1;
     }

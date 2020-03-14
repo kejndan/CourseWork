@@ -1,0 +1,9 @@
+{% extends 'myapp/_base.html' %}
+
+
+{% block content %}
+    {% for line in file %}
+    <p>{{ line }}</p>
+    {% endfor %}
+
+{% endblock %}

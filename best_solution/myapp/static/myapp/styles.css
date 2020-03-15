@@ -1,9 +1,9 @@
 #window_table{
-    width:500px;
+    width:600px;
     height:500px;
     background-color: darkkhaki;
-    overflow: auto;
     float: left;
+
 }
 #window_output{
     width:500px;
@@ -11,6 +11,18 @@
     background-color: #506fbd;
     overflow: auto;
     /*float: left;*/
+}
+#features_window{
+    float: left;
+    overflow: auto;
+    width:500px;
+    height:500px;
+}
+#targets_window{
+    /*float: left;*/
+    overflow: auto;
+    width:100px;
+    height:500px;
 }
 .btn{
     float: left;

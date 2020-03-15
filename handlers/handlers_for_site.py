@@ -3,8 +3,13 @@ from construction_pipeline.genetic_algorithm import GeneticClassification, Genet
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import shutil, os
+import  numpy as np
 
-
+def get_names(number):
+    names = []
+    for i in range(number):
+        names.append('Feature {0}'.format(i))
+    return np.array(names)
 
 
 def handle_uploaded_file(f):

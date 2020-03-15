@@ -4,12 +4,13 @@ from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
 # Imaginary function to handle an uploaded file.
-from handlers.handlers_for_site import handle_uploaded_file, remove_folder_contents
+from handlers.handlers_for_site import handle_uploaded_file, remove_folder_contents,get_names
 from best_solution.settings import MEDIA_ROOT, THREAD
 from threading import Thread
 from multiprocessing import Process
 from handlers.core import algorithm_manager
 import os
+import numpy as np
 from django.core import serializers
 
 
@@ -29,8 +30,18 @@ def upload_file(request):
 def processing(request):
     if request.method == 'GET':
         df = pd.read_csv(MEDIA_ROOT+'\data.csv')
+        features = df.drop(df.columns[-1], 1)
+        targets= df[df.columns[-1:]]
+        try:
+            names_features = np.array(features.columns, dtype=float)
+            names_features = get_names(len(names_features))
+            name_targets = ['Target']
+        except ValueError:
+            names_features = features.columns
+            name_targets = targets.columns
         return render(request, 'myapp/processing.html',
-                      {'columns' : df.columns, 'rows' : df.to_dict('records')})
+                      {'columns_feature': names_features, 'rows_feature': features.to_dict('records'),
+                       'column_targets': name_targets, 'rows_targets': targets.to_dict('records')})
     elif request.method == 'POST':
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
         return render(request, 'myapp/processing.html',
@@ -52,6 +63,7 @@ def working(request):
         # return None
         return render(request, 'myapp/processing.html',
                       {'columns' : df.columns, 'rows' : df.to_dict('records')})
+
 def ajax_request(request):
     f = open(MEDIA_ROOT + '\\results.txt', 'r')
     return render(request, 'myapp/result.html', {'file': f.read().split('\n')})

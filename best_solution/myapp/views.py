@@ -39,13 +39,41 @@ def processing(request):
         except ValueError:
             names_features = features.columns
             name_targets = targets.columns
+        status_checkboxes = [True for i in range(len(names_features))]
+        status_checkboxes = dict(zip(names_features, status_checkboxes))
         return render(request, 'myapp/processing.html',
                       {'columns_feature': names_features, 'rows_feature': features.to_dict('records'),
-                       'column_targets': name_targets, 'rows_targets': targets.to_dict('records')})
+                       'column_targets': name_targets, 'rows_targets': targets.to_dict('records'),
+                       'status_checkboxes':status_checkboxes})
     elif request.method == 'POST':
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
+        all_features = df.drop(df.columns[-1], 1)
+        targets= df[df.columns[-1:]]
+        got_status_checkboxes = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
+        select_features = all_features.copy()
+        for index in range(len(all_features.columns)):
+            if index not in got_status_checkboxes:
+                select_features = select_features.drop(all_features.columns[index], 1)
+        try:
+            names_features = np.array(all_features.columns, dtype=float)
+            names_features = get_names(len(names_features))
+            names_select_features = np.array(select_features.columns, dtype=float)
+            names_select_features = get_names(len(names_features), got_status_checkboxes)
+            name_targets = ['Target']
+        except ValueError as e:
+            print(e)
+            names_features = all_features.columns
+            names_select_features = select_features.columns
+            name_targets = targets.columns
+
+        status_checkboxes = [False for i in range(len(names_features))]
+        for number in got_status_checkboxes:
+            status_checkboxes[number] = True
+        status_checkboxes = dict(zip(names_features, status_checkboxes))
         return render(request, 'myapp/processing.html',
-                      {'columns' : df.columns, 'rows' : df.to_dict('records')})
+                      {'columns_feature' : names_select_features, 'rows_feature' : select_features.to_dict('records'),
+                       'column_targets' : name_targets, 'rows_targets' : targets.to_dict('records'),
+                       'status_checkboxes':status_checkboxes})
 
 def working(request):
     if request.method == 'POST':

@@ -5,10 +5,14 @@ import pandas as pd
 import shutil, os
 import  numpy as np
 
-def get_names(number):
+def get_names(number, exception=[]):
     names = []
     for i in range(number):
-        names.append('Feature {0}'.format(i))
+        if exception != []:
+            if i in exception:
+                names.append('Feature {0}'.format(i))
+        else:
+            names.append('Feature {0}'.format(i))
     return np.array(names)
 
 

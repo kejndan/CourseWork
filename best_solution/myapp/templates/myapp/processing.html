@@ -1,6 +1,7 @@
 {% extends 'myapp/_base.html' %}
 {% load static %}
 
+
 {% block content %}
     <script src="{% static 'myapp/jquery.js'%}"></script>
     <script>
@@ -59,6 +60,27 @@
             <p><b>{{ stat }}</b></p>
         {% endfor %}
     </div>
+    <form action="" method="post">
+    {% csrf_token %}
+         <div class="multiselect">
+    <div class="selectBox" onclick="showCheckboxes()">
+      <select>
+        <option>Select an option</option>
+      </select>
+      <div class="overSelect"></div>
+    </div>
+    <div id="checkboxes">
+        {% for col, val in status_checkboxes.items %}
+            <label>
+        <input type="checkbox" name="checks[]" value="{{ forloop.counter }}"
+        {%if val %}checked="checked"{% endif %}/>
+            {{col}}</label>
+        {% endfor %}
+    </div>
+  </div>
+
+    <input type="submit" class="btn" value="Change" id="start_btn">
+    </form>
     <form action="working" method="post" id="form">
     {% csrf_token %}
         <input type="radio" name="type_func" value="regression" checked>Regres

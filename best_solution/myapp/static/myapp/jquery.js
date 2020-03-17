@@ -88,15 +88,26 @@ if (window.location.pathname === '/processing/working') {
     setInterval(timer, 2000);
 
 }
-var expanded = false;
+var expanded_check = false;
+var expanded_radio = false;
 
 function showCheckboxes() {
   var checkboxes = document.getElementById("checkboxes");
-  if (!expanded) {
+  if (!expanded_check) {
     checkboxes.style.display = "block";
-    expanded = true;
+    expanded_check = true;
   } else {
     checkboxes.style.display = "none";
-    expanded = false;
+    expanded_check = false;
+  }
+}
+function showRadiobuttons() {
+  var checkboxes = document.getElementById("radiobuttons");
+  if (!expanded_radio) {
+    checkboxes.style.display = "block";
+    expanded_radio = true;
+  } else {
+    checkboxes.style.display = "none";
+    expanded_radio = false;
   }
 }

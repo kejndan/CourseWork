@@ -62,14 +62,14 @@
     </div>
     <form action="" method="post">
     {% csrf_token %}
-         <div class="multiselect">
-    <div class="selectBox" onclick="showCheckboxes()">
-      <select>
-        <option>Select an option</option>
-      </select>
-      <div class="overSelect"></div>
-    </div>
-    <div id="checkboxes">
+        <div class="multiselect">
+            <div class="selectBox" onclick="showCheckboxes()">
+            <select>
+                <option>Select an option</option>
+            </select>
+            <div class="overSelect"></div>
+            </div>
+            <div id="checkboxes">
         {% for col, val in status_checkboxes.items %}
             <label>
         <input type="checkbox" name="checks[]" value="{{ forloop.counter }}"
@@ -77,7 +77,24 @@
             {{col}}</label>
         {% endfor %}
     </div>
-  </div>
+        </div>
+        <div class="multiselect">
+            <div class="selectBox" onclick="showRadiobuttons()">
+            <select>
+                <option>Select an option</option>
+            </select>
+            <div class="overSelect"></div>
+            </div>
+            <div id="radiobuttons">
+                {% for col, val in status_radio.items %}
+                <label>
+                        <input type="radio" name="checksradio[]" value="{{ forloop.counter }}"
+                                {%if val %}checked="checked"{% endif %}/>
+                        {{col}}
+                </label>
+                {% endfor %}
+        </div>
+        </div>
 
     <input type="submit" class="btn" value="Change" id="start_btn">
     </form>

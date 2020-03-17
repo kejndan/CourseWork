@@ -33,35 +33,45 @@ def processing(request):
         features = df.drop(df.columns[-1], 1)
         targets= df[df.columns[-1:]]
         try:
+            names_all_features = np.array(df.columns, dtype=float)
             names_features = np.array(features.columns, dtype=float)
+            names_all_features = get_names(len(names_all_features))
             names_features = get_names(len(names_features))
             name_targets = ['Target']
         except ValueError:
+            names_all_features = df.columns
             names_features = features.columns
             name_targets = targets.columns
         status_checkboxes = [True for i in range(len(names_features))]
         status_checkboxes = dict(zip(names_features, status_checkboxes))
+        status_radio = [False for i in range(len(names_all_features)-1)] + [True]
+        status_radio = dict(zip(names_all_features, status_radio))
         return render(request, 'myapp/processing.html',
                       {'columns_feature': names_features, 'rows_feature': features.to_dict('records'),
                        'column_targets': name_targets, 'rows_targets': targets.to_dict('records'),
-                       'status_checkboxes':status_checkboxes})
+                       'status_checkboxes':status_checkboxes, 'status_radio': status_radio})
     elif request.method == 'POST':
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
-        all_features = df.drop(df.columns[-1], 1)
-        targets= df[df.columns[-1:]]
+        index_target = int(request.POST.get('checksradio[]')) - 1
+        all_features = df.drop(df.columns[index_target], 1)
+        targets= df[df.columns[index_target:index_target+1]]
         got_status_checkboxes = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
+        if index_target in got_status_checkboxes:
+            np.delete(got_status_checkboxes, index_target)
         select_features = all_features.copy()
         for index in range(len(all_features.columns)):
             if index not in got_status_checkboxes:
                 select_features = select_features.drop(all_features.columns[index], 1)
         try:
+            names_all_features = np.array(df.columns, dtype=float)
             names_features = np.array(all_features.columns, dtype=float)
             names_features = get_names(len(names_features))
+            names_all_features = get_names(len(names_all_features))
             names_select_features = np.array(select_features.columns, dtype=float)
             names_select_features = get_names(len(names_features), got_status_checkboxes)
             name_targets = ['Target']
-        except ValueError as e:
-            print(e)
+        except ValueError:
+            names_all_features = df.columns
             names_features = all_features.columns
             names_select_features = select_features.columns
             name_targets = targets.columns
@@ -70,10 +80,14 @@ def processing(request):
         for number in got_status_checkboxes:
             status_checkboxes[number] = True
         status_checkboxes = dict(zip(names_features, status_checkboxes))
+        status_radio = [False for i in range(len(names_all_features))]
+        status_radio[index_target] = True
+        status_radio = dict(zip(names_all_features, status_radio))
+
         return render(request, 'myapp/processing.html',
                       {'columns_feature' : names_select_features, 'rows_feature' : select_features.to_dict('records'),
                        'column_targets' : name_targets, 'rows_targets' : targets.to_dict('records'),
-                       'status_checkboxes':status_checkboxes})
+                       'status_checkboxes':status_checkboxes, 'status_radio': status_radio})
 
 def working(request):
     if request.method == 'POST':

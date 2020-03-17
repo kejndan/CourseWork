@@ -32,3 +32,11 @@ def remove_folder_contents(folder):
             print(e)
 
 
+def prepare_for_json(features_dict, target_dict):
+    output_dict = dict()
+    for name_column in target_dict.keys():
+        if target_dict[name_column] == True:
+            output_dict[name_column] = 'Target'
+        else:
+            output_dict[name_column] = features_dict[name_column]
+    return output_dict

@@ -1,20 +1,21 @@
 #window_table{
     width:600px;
     height:500px;
-    background-color: darkkhaki;
+    /*background-color: white;*/
     float: left;
 
 }
 #window_output{
     width:500px;
     height:500px;
-    background-color: #506fbd;
+    background-color: red;
     overflow: auto;
     /*float: left;*/
 }
 #features_window{
     float: left;
     overflow: auto;
+    background-color: green;
     width:500px;
     height:500px;
 }
@@ -23,6 +24,7 @@
     overflow: auto;
     width:100px;
     height:500px;
+    background-color: white;
 }
 .btn{
     float: left;

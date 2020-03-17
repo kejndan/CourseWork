@@ -4,13 +4,14 @@ from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
 # Imaginary function to handle an uploaded file.
-from handlers.handlers_for_site import handle_uploaded_file, remove_folder_contents,get_names
+from handlers.handlers_for_site import handle_uploaded_file, remove_folder_contents,get_names,prepare_for_json
 from best_solution.settings import MEDIA_ROOT, THREAD
 from threading import Thread
 from multiprocessing import Process
 from handlers.core import algorithm_manager
 import os
 import numpy as np
+import json
 from django.core import serializers
 
 
@@ -46,6 +47,8 @@ def processing(request):
         status_checkboxes = dict(zip(names_features, status_checkboxes))
         status_radio = [False for i in range(len(names_all_features)-1)] + [True]
         status_radio = dict(zip(names_all_features, status_radio))
+        with open(MEDIA_ROOT + '/info_algorithm.json','w') as file:
+            json.dump(prepare_for_json(status_checkboxes, status_radio), file)
         return render(request, 'myapp/processing.html',
                       {'columns_feature': names_features, 'rows_feature': features.to_dict('records'),
                        'column_targets': name_targets, 'rows_targets': targets.to_dict('records'),
@@ -83,7 +86,8 @@ def processing(request):
         status_radio = [False for i in range(len(names_all_features))]
         status_radio[index_target] = True
         status_radio = dict(zip(names_all_features, status_radio))
-
+        with open(MEDIA_ROOT + '/info_algorithm.json','w') as file:
+            json.dump(prepare_for_json(status_checkboxes, status_radio), file)
         return render(request, 'myapp/processing.html',
                       {'columns_feature' : names_select_features, 'rows_feature' : select_features.to_dict('records'),
                        'column_targets' : name_targets, 'rows_targets' : targets.to_dict('records'),
@@ -91,20 +95,41 @@ def processing(request):
 
 def working(request):
     if request.method == 'POST':
-        print(request.POST.get("type_func"))
         if THREAD[0].is_alive():
             THREAD[0].terminate()
-            # THREAD[0] = Process(target=file_to_alg, args=(MEDIA_ROOT,'\data.csv',))
         else:
             if os.path.isfile(MEDIA_ROOT+'\output.txt') :
                 os.remove(MEDIA_ROOT+'\output.txt')
             THREAD[0] = Process(target=algorithm_manager, args=(MEDIA_ROOT, '\data.csv',request.POST.get("type_func"),))
             THREAD[0].start()
-        # proc = Thread(target=file_to_alg, args=(MEDIA_ROOT + '\data.csv',)).start()
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
-        # return None
+        with open(MEDIA_ROOT + '\info_algorithm.json') as file :
+            info_data = json.load(file)
+        features = df.copy()
+        for number, name in enumerate(info_data.keys()) :
+            if not info_data[name] :
+                features = features.drop(df.columns[number], 1)
+            if info_data[name] == 'Target' :
+                features = features.drop(df.columns[number], 1)
+                target = df[df.columns[number :number + 1]]
+        try:
+            names_all_features = np.array(df.columns, dtype=float)
+            names_features = np.array(features.columns, dtype=float)
+            names_all_features = get_names(len(names_all_features))
+            names_features = get_names(len(names_features))
+            name_targets = ['Target']
+        except ValueError:
+            names_all_features = df.columns
+            names_features = features.columns
+            name_targets = target.columns
+        status_checkboxes = [True for i in range(len(names_features))]
+        status_checkboxes = dict(zip(names_features, status_checkboxes))
+        status_radio = [False for i in range(len(names_all_features)-1)] + [True]
+        status_radio = dict(zip(names_all_features, status_radio))
         return render(request, 'myapp/processing.html',
-                      {'columns' : df.columns, 'rows' : df.to_dict('records')})
+                      {'columns_feature' : names_features, 'rows_feature' : features.to_dict('records'),
+                       'column_targets' : name_targets, 'rows_targets' : target.to_dict('records'),
+                       'status_checkboxes' : status_checkboxes, 'status_radio' : status_radio})
 
 def ajax_request(request):
     f = open(MEDIA_ROOT + '\\results.txt', 'r')

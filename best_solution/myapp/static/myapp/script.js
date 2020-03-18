@@ -1,33 +1,21 @@
 function loadXMLDoc()
 {
-var xmlhttp;
-if (window.XMLHttpRequest)
-  {// код для IE7+, Firefox, Chrome, Opera, Safari
-  xmlhttp=new XMLHttpRequest();
-  }
-else
-  {// код для IE6, IE5
-  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-  }
-xmlhttp.onreadystatechange=function()
-  {
-  if (xmlhttp.readyState==4 && xmlhttp.status==200)
-    {
-      var arr = xmlhttp.responseText.split(/\r?\n/);
-      for (let i=window.stopIndex; i<arr.length; i++){
-          if (arr[i] === '##END##'){
-    //               $.ajax({  //Call ajax function sending the option loaded
-    //                     url: "/processing/ajax_request",  //This is the url of the ajax view where you make the search
-    //                     type: 'GET',
-    //                     success: function(data) {
-    //                             if (data.success) {
-    //                             window.location.href = data.url;
-    // }
+    var xmlhttp;
+    if (window.XMLHttpRequest) {// код для IE7+, Firefox, Chrome, Opera, Safari
+    xmlhttp=new XMLHttpRequest();
+    }
+    else {// код для IE6, IE5
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange=function() {
+    if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+        var arr = xmlhttp.responseText.split(/\r?\n/);
+        for (let i=window.stopIndex; i<arr.length; i++){
+            if (arr[i] === '##END##') {
             window.location.href = 'ajax_request';
             }
-    //     })}
-          else{
-          document.getElementById("window_output").innerHTML += '<p>'+arr[i]+'</p>';}
+            else {
+            document.getElementById("window_output").innerHTML += '<p>'+arr[i]+'</p>';}
       }
       window.stopIndex=arr.length-1;
     }
@@ -79,18 +67,16 @@ $('#form').submit(function(e){
             }
         })
     });
-console.log(window.location.pathname);
 if (window.location.pathname === '/processing/working') {
     document.addEventListener("DOMContentLoaded", function(event) {
     document.getElementById("stop_btn").disabled = 0;
     // document.getElementById("start_btn").disabled = 1;
     });
     setInterval(timer, 2000);
-
 }
-var expanded_check = false;
-var expanded_radio = false;
 
+
+var expanded_check = false;
 function showCheckboxes() {
   var checkboxes = document.getElementById("checkboxes");
   if (!expanded_check) {
@@ -101,6 +87,7 @@ function showCheckboxes() {
     expanded_check = false;
   }
 }
+var expanded_radio = false;
 function showRadiobuttons() {
   var checkboxes = document.getElementById("radiobuttons");
   if (!expanded_radio) {

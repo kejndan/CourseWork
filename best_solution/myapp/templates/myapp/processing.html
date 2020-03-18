@@ -3,57 +3,57 @@
 
 
 {% block content %}
-    <script src="{% static 'myapp/jquery.js'%}"></script>
+    <script src="{% static 'myapp/script.js' %}"></script>
     <script>
         var url = "{% static '' %}";
     </script>
 
 
     <div id="window_table">
-    <div id="features_window">
-    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Number of row</th>
-                {% for col in columns_feature %}
-                <th>{{ col }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in rows_feature %}
+        <div id="features_window">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Number of row</th>
+                        {% for col in columns_feature %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows_feature %}
+                        <tr>
+                        <td>{{ forloop.counter }}</td>
+                        {% for value in row.values %}
+                          <td>{{value}}</td>
+                        {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div id="targets_window" width="100%" cellspacing="0">
+            <table>
+                <thead>
                 <tr>
-                <td>{{ forloop.counter }}</td>
-                {% for value in row.values %}
-                  <td>{{value}}</td>
-                {% endfor %}
+                    <th>Number of row</th>
+                    {% for col in column_targets %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    </div>
-    <div id="targets_window" width="100%" cellspacing="0">
-        <table>
-            <thead>
-            <tr>
-                <th>Number of row</th>
-                {% for col in column_targets %}
-                <th>{{ col }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-            <tbody>
-            {% for row in rows_targets %}
-                <tr>
-                <td>{{ forloop.counter }}</td>
-                {% for value in row.values %}
-                  <td>{{value}}</td>
-                {% endfor %}
-                </tr>
-            {% endfor %}
-        </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    {% for row in rows_targets %}
+                        <tr>
+                        <td>{{ forloop.counter }}</td>
+                         {% for value in row.values %}
+                             <td>{{value}}</td>
+                         {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     <div id="window_output">
         {% for stat in status %}

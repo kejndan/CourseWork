@@ -61,22 +61,23 @@
         {% endfor %}
     </div>
     <form action="" method="post">
-    {% csrf_token %}
+        {% csrf_token %}
         <div class="multiselect">
             <div class="selectBox" onclick="showCheckboxes()">
-            <select>
-                <option>Select an option</option>
-            </select>
-            <div class="overSelect"></div>
+                <select>
+                    <option>Select an option</option>
+                </select>
+                <div class="overSelect"></div>
             </div>
             <div id="checkboxes">
-        {% for col, val in status_checkboxes.items %}
-            <label>
-        <input type="checkbox" name="checks[]" value="{{ forloop.counter }}"
-        {%if val %}checked="checked"{% endif %}/>
-            {{col}}</label>
-        {% endfor %}
-    </div>
+                {% for col, val in status_checkboxes.items %}
+                <label>
+                        <input type="checkbox" name="checks[]" value="{{ forloop.counter }}"
+                            {%if val %}checked="checked"{% endif %}/>
+                        {{col}}
+                </label>
+                {% endfor %}
+            </div>
         </div>
         <div class="multiselect">
             <div class="selectBox" onclick="showRadiobuttons()">
@@ -93,18 +94,17 @@
                         {{col}}
                 </label>
                 {% endfor %}
+            </div>
         </div>
-        </div>
-
-    <input type="submit" class="btn" value="Change" id="start_btn">
+        <input type="submit" class="btn" value="Change" id="start_btn">
     </form>
     <form action="working" method="post" id="form">
-    {% csrf_token %}
-        <input type="radio" name="type_func" value="regression" checked>Regres
-        <input type="radio" name="type_func" value="classification">Class
-        <input type="radio" name="type_func" value="clustering">Clust
-        <input type="submit" class="btn" value="RUN" id="start_btn">
-        <input type="submit" class="btn" value="STOP" id="stop_btn" disabled>
+        {% csrf_token %}
+            <input type="radio" name="type_func" value="regression" checked>Regres
+            <input type="radio" name="type_func" value="classification">Class
+            <input type="radio" name="type_func" value="clustering">Clust
+            <input type="submit" class="btn" value="RUN" id="start_btn">
+            <input type="submit" class="btn" value="STOP" id="stop_btn" disabled>
     </form>
 
 

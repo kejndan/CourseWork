@@ -12,7 +12,7 @@ function loadXMLDoc()
         var arr = xmlhttp.responseText.split(/\r?\n/);
         for (let i=window.stopIndex; i<arr.length; i++){
             if (arr[i] === '##END##') {
-            window.location.href = 'ajax_request';
+            window.location.href = 'result';
             }
             else {
             document.getElementById("window_output").innerHTML += '<p>'+arr[i]+'</p>';}

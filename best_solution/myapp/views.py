@@ -131,7 +131,7 @@ def working(request):
                        'column_targets' : name_targets, 'rows_targets' : target.to_dict('records'),
                        'status_checkboxes' : status_checkboxes, 'status_radio' : status_radio})
 
-def ajax_request(request):
+def result(request):
     f = open(MEDIA_ROOT + '\\results.txt', 'r')
     return render(request, 'myapp/result.html', {'file': f.read().split('\n')})
 

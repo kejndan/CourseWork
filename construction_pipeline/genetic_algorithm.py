@@ -502,8 +502,7 @@ class GeneticBase(object) :
         x_valid, x_test, y_valid, y_test = train_test_split(features_test, targets_test, test_size=.5,
                                                             random_state=42)
         for index, pipeline in enumerate(pipeline_list_population) :
-            try :
-
+            try:
                 if self.type_explore == 'clustering' :
                     # pipeline[1].fit(self.features_train)
                     learned_pipelines.append(
@@ -527,8 +526,8 @@ class GeneticBase(object) :
             elif self.type_explore == 'clustering' :
                 # fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train)
                 err = sklearn.metrics.davies_bouldin_score(x_test, pipeline[1].fit_predict(x_test))
-            else :
-                fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train,
+            else:
+                fitted_pipeline = pipeline_list_population[learned_pipelines[number][0]][1].fit(self.features_train,
                                                                                            self.targets_train)
                 err = self.score_func(y_test, fitted_pipeline.predict(x_test))
             error_list.append(err)

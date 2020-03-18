@@ -2,13 +2,16 @@ from best_solution.settings import MEDIA_ROOT
 from construction_pipeline.genetic_algorithm import GeneticClassification, GeneticRegression
 from sklearn.model_selection import train_test_split
 import pandas as pd
-import shutil, os
-import  numpy as np
+import os
+import numpy as np
 
-def get_names(number, exception=[]):
+
+def get_names(number, exception=None):
+    if exception is None:
+        exception = []
     names = []
     for i in range(number):
-        if exception != []:
+        if exception:
             if i in exception:
                 names.append('Feature {0}'.format(i))
         else:
@@ -21,21 +24,21 @@ def handle_uploaded_file(f):
         for chunk in f.chunks():
             dest.write(chunk)
 
+
 def remove_folder_contents(folder):
-    for the_file in os.listdir(folder) :
+    for the_file in os.listdir(folder):
         file_path = os.path.join(folder, the_file)
-        try :
-            if os.path.isfile(file_path) :
+        try:
+            if os.path.isfile(file_path):
                 os.unlink(file_path)
-            # elif os.path.isdir(file_path): shutil.rmtree(file_path)
-        except Exception as e :
+        except Exception as e:
             print(e)
 
 
 def prepare_for_json(features_dict, target_dict):
     output_dict = dict()
     for name_column in target_dict.keys():
-        if target_dict[name_column] == True:
+        if target_dict[name_column]:
             output_dict[name_column] = 'Target'
         else:
             output_dict[name_column] = features_dict[name_column]

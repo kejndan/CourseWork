@@ -533,7 +533,7 @@ class GeneticBase(object) :
                 err = self.score_func(y_test, fitted_pipeline.predict(x_test))
             error_list.append(err)
             print(self.path+'pipeline{0}.pkl'.format(number))
-            pickle.dump(pipeline_list_population[learned_pipelines[number][0]][1],
+            pickle.dump(fitted_pipeline,
                         open(self.path+'\pipeline{0}.pkl'.format(number), 'wb'))
 
         print('Error', error_list)

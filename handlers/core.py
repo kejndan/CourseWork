@@ -45,7 +45,7 @@ def algorithm_manager(path, filename, class_problems):
             features = features.drop(df.columns[number], 1)
             target = df[df.columns[number :number + 1]]
     x_train, x_test, y_train, y_test = train_test_split(features, target, test_size=.2, random_state=42)
-    GB = get_solver(class_problems)(population_size=20, n_generations=3, name=filename, path=path)
+    GB = get_solver(class_problems)(population_size=50, n_generations=3, name=filename, path=path)
     GB.cv = 3
     GB.fit(x_train, np.array(y_train).reshape(-1,))
     GB.score(x_test, y_test, 10, [[],[]])

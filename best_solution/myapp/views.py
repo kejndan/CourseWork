@@ -14,6 +14,7 @@ import numpy as np
 import json
 from django.core import serializers
 import shutil
+import pickle
 
 
 def upload_file(request):
@@ -172,6 +173,7 @@ def prepared(request):
         if 'Change' in request.POST:
             df = pd.read_csv(MEDIA_ROOT + '\data.csv')
             got_status_checkboxes = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
+            print(got_status_checkboxes)
             all_features = df.copy()
             select_features = all_features.copy()
             for index in range(len(all_features.columns)) :
@@ -197,6 +199,40 @@ def prepared(request):
                           {'columns_feature' : names_select_features,
                            'rows_feature' : select_features.to_dict('records'),
                            'status_checkboxes' : status_checkboxes})
+        elif 'RUN' in request.POST:
+            df = pd.read_csv(MEDIA_ROOT + '\data.csv')
+            got_status_checkboxes = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
+            print(got_status_checkboxes)
+            all_features = df.copy()
+            select_features = all_features.copy()
+            for index in range(len(all_features.columns)) :
+                if index not in got_status_checkboxes :
+                    select_features = select_features.drop(all_features.columns[index], 1)
+            try :
+                names_all_features = np.array(df.columns, dtype=float)
+                names_all_features = get_names(len(names_all_features))
+                names_features = np.array(all_features.columns, dtype=float)
+                names_features = get_names(len(names_features))
+                names_select_features = np.array(select_features.columns, dtype=float)
+                names_select_features = get_names(len(names_select_features), got_status_checkboxes)
+            except ValueError as e :
+                print(e)
+                names_all_features = df.columns
+                names_features = all_features.columns
+                names_select_features = select_features.columns
+            status_checkboxes = [False for i in range(len(names_all_features))]
+            for number in got_status_checkboxes :
+                status_checkboxes[number] = True
+            status_checkboxes = dict(zip(names_all_features, status_checkboxes))
+            pipeline = pickle.load(open(MEDIA_ROOT + '\\pipeline.pkl', 'rb'))
+            print(select_features)
+            result = pd.DataFrame(pipeline.predict(select_features))
+            return render(request, 'myapp/prepared.html',
+                          {'columns_feature' : names_select_features,
+                           'rows_feature' : select_features.to_dict('records'),
+                           'column_targets' : 'Target', 'rows_targets' : result.to_dict('records'),
+                           'status_checkboxes' : status_checkboxes})
+
 
 
 

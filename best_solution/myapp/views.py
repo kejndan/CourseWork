@@ -136,3 +136,9 @@ def ajax_request(request):
     return render(request, 'myapp/result.html', {'file': f.read().split('\n')})
 
 
+
+
+
+
+
+

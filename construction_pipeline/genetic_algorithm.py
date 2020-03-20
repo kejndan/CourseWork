@@ -20,6 +20,7 @@ import warnings
 from sklearn.metrics import accuracy_score
 from datetime import datetime
 from func_timeout import func_timeout, FunctionTimedOut
+import pickle
 
 
 CALLABLES = (types.FunctionType, types.MethodType)
@@ -531,6 +532,9 @@ class GeneticBase(object) :
                                                                                            self.targets_train)
                 err = self.score_func(y_test, fitted_pipeline.predict(x_test))
             error_list.append(err)
+            print(self.path+'pipeline{0}.pkl'.format(number))
+            pickle.dump(pipeline_list_population[learned_pipelines[number][0]][1],
+                        open(self.path+'\pipeline{0}.pkl'.format(number), 'wb'))
 
         print('Error', error_list)
         # output_inform[0].append(err)
@@ -552,6 +556,7 @@ class GeneticBase(object) :
             print(i)
         with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f :
             f.write('##END##')
+
     def export_information(self, learned_pipelines, error, time_work) :
         with open(self.name + str(datetime.today())[1 :] + '.txt', 'a') as f :
             for ind in self.population[learned_pipelines[0][0]] :

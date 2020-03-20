@@ -2,8 +2,25 @@
 
 
 {% block content %}
-    {% for line in file %}
-    <p>{{ line }}</p>
-    {% endfor %}
+    <div id="info_pipeline">
+        {% for line in file %}
+            <p>{{ line }}</p>
+        {% endfor %}
+    </div>
+    <form action="" method="post">
+    {% csrf_token %}
+    <table>
+        <thead>
+        <tr>{{ form }}</tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><input type="submit" value="Pipeline 1" class="btn"></td>
+            <td><input type="submit" value="Pipeline 2" class="btn"></td>
+            <td><input type="submit" value="Pipeline 3" class="btn"></td>
+        </tr>
+        </tbody>
+    </table>
+    </form>
 
 {% endblock %}

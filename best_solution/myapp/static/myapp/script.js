@@ -58,7 +58,6 @@ $('#form').submit(function(e){
 //     });
 // var datastring = $form.serialize();
     e.preventDefault();
-    alert('sad')
     $.ajax({  //Call ajax function sending the option loaded
       url: "/processing/",  //This is the url of the ajax view where you make the search
       type: 'POST',

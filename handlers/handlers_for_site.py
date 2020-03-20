@@ -11,7 +11,7 @@ def get_names(number, exception=None):
         exception = []
     names = []
     for i in range(number):
-        if exception:
+        if exception != []:
             if i in exception:
                 names.append('Feature {0}'.format(i))
         else:

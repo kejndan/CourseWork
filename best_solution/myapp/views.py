@@ -21,7 +21,7 @@ def upload_file(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             remove_folder_contents(MEDIA_ROOT)
-            handle_uploaded_file(request.FILES['file'])
+            handle_uploaded_file(request.FILES['file'],'data.csv')
             return HttpResponseRedirect('/processing/')
     else:
         form = UploadFileForm()
@@ -145,3 +145,57 @@ def result(request):
             shutil.copyfile(MEDIA_ROOT + '\\pipeline1.pkl', MEDIA_ROOT + '\\pipeline.pkl')
         else:
             shutil.copyfile(MEDIA_ROOT + '\\pipeline2.pkl', MEDIA_ROOT + '\\pipeline.pkl')
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(request.FILES['file'],'data.csv')
+        return HttpResponseRedirect('/prepared/')
+
+
+def prepared(request):
+    if request.method == 'GET':
+        df = pd.read_csv(MEDIA_ROOT + '\\data.csv')
+        features = df.drop(df.columns[-1], 1)
+        try :
+            names_all_features = np.array(df.columns, dtype=float)
+            names_features = np.array(features.columns, dtype=float)
+            names_all_features = get_names(len(names_all_features))
+            names_features = get_names(len(names_features))
+        except ValueError :
+            names_all_features = df.columns
+            names_features = features.columns
+        status_checkboxes = [True for _ in range(len(names_all_features))]
+        status_checkboxes = dict(zip(names_all_features, status_checkboxes))
+        return render(request, 'myapp/prepared.html',
+                      {'columns_feature' : names_features, 'rows_feature' : features.to_dict('records'),
+                       'status_checkboxes' : status_checkboxes})
+    elif request.method == 'POST':
+        if 'Change' in request.POST:
+            df = pd.read_csv(MEDIA_ROOT + '\data.csv')
+            got_status_checkboxes = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
+            all_features = df.copy()
+            select_features = all_features.copy()
+            for index in range(len(all_features.columns)) :
+                if index not in got_status_checkboxes :
+                    select_features = select_features.drop(all_features.columns[index], 1)
+            try:
+                names_all_features = np.array(df.columns, dtype=float)
+                names_all_features = get_names(len(names_all_features))
+                names_features = np.array(all_features.columns, dtype=float)
+                names_features = get_names(len(names_features))
+                names_select_features = np.array(select_features.columns, dtype=float)
+                names_select_features = get_names(len(names_select_features), got_status_checkboxes)
+            except ValueError as e :
+                print(e)
+                names_all_features = df.columns
+                names_features = all_features.columns
+                names_select_features = select_features.columns
+            status_checkboxes = [False for i in range(len(names_all_features))]
+            for number in got_status_checkboxes :
+                status_checkboxes[number] = True
+            status_checkboxes = dict(zip(names_all_features, status_checkboxes))
+            return render(request, 'myapp/prepared.html',
+                          {'columns_feature' : names_select_features,
+                           'rows_feature' : select_features.to_dict('records'),
+                           'status_checkboxes' : status_checkboxes})
+
+

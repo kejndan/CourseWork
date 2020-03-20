@@ -19,8 +19,8 @@ def get_names(number, exception=None):
     return np.array(names)
 
 
-def handle_uploaded_file(f):
-    with open(MEDIA_ROOT+'/data.csv', 'wb+') as dest:
+def handle_uploaded_file(f, name):
+    with open(MEDIA_ROOT+'/'+name, 'wb+') as dest:
         for chunk in f.chunks():
             dest.write(chunk)
 

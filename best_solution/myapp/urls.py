@@ -8,6 +8,7 @@ urlpatterns = [
     path('processing/', views.processing),
     path('processing/working', views.working),
     path('processing/result', views.result),
+    path('prepared/', views.prepared)
 ]
 
 

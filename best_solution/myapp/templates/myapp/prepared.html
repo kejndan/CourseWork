@@ -1,14 +1,8 @@
 {% extends 'myapp/_base.html' %}
 {% load static %}
 
-
-{% block content %}
-    <script src="{% static 'myapp/script.js' %}"></script>
-    <script>
-        var url = "{% static '' %}";
-    </script>
-
-
+{% block content%}
+        <script src="{% static 'myapp/script.js' %}"></script>
     <div id="window_table">
         <div id="features_window">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -55,11 +49,6 @@
             </table>
         </div>
     </div>
-    <div id="window_output">
-{#        {% for stat in status %}#}
-{#            <p><b>{{ stat }}</b></p>#}
-{#        {% endfor %}#}
-    </div>
     <form action="" method="post">
         {% csrf_token %}
         <div class="multiselect">
@@ -79,34 +68,10 @@
                 {% endfor %}
             </div>
         </div>
-        <div class="multiselect">
-            <div class="selectBox" onclick="showRadiobuttons()">
-            <select>
-                <option>Select an option</option>
-            </select>
-            <div class="overSelect"></div>
-            </div>
-            <div id="radiobuttons">
-                {% for col, val in status_radio.items %}
-                <label>
-                        <input type="radio" name="checksradio[]" value="{{ forloop.counter }}"
-                                {%if val %}checked="checked"{% endif %}/>
-                        {{col}}
-                </label>
-                {% endfor %}
-            </div>
-        </div>
-        <input type="submit" class="btn" value="Change" id="start_btn">
+        <input type="submit" class="btn" value="Change" id="start_btn" name="Change">
     </form>
-    <form action="working" method="post" id="form">
+        <form action="" method="post" id="form">
         {% csrf_token %}
-            <input type="radio" name="type_func" value="regression" checked>Regres
-            <input type="radio" name="type_func" value="classification">Class
-            <input type="radio" name="type_func" value="clustering">Clust
-            <input type="submit" class="btn" value="RUN" id="start_btn">
-            <input type="submit" class="btn" value="STOP" id="stop_btn" disabled>
+            <input type="submit" class="btn" value="RUN" id="start_btn" name="RUN">
     </form>
-
-
-{#  <p><a href="{% url 'home' %}">Return to home</a></p>#}
 {% endblock %}

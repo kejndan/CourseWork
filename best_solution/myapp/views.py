@@ -13,6 +13,7 @@ import os
 import numpy as np
 import json
 from django.core import serializers
+import shutil
 
 
 def upload_file(request):
@@ -137,5 +138,10 @@ def result(request):
         form = UploadFileForm()
         f = open(MEDIA_ROOT + '\\results.txt', 'r')
         return render(request, 'myapp/result.html', {'file': f.read().split('\n'), 'form':form})
-
-
+    elif request.method == 'POST':
+        if 'Pipeline 1' in request.POST:
+            shutil.copyfile(MEDIA_ROOT + '\\pipeline0.pkl', MEDIA_ROOT + '\\pipeline.pkl')
+        elif 'Pipeline 2' in request.POST:
+            shutil.copyfile(MEDIA_ROOT + '\\pipeline1.pkl', MEDIA_ROOT + '\\pipeline.pkl')
+        else:
+            shutil.copyfile(MEDIA_ROOT + '\\pipeline2.pkl', MEDIA_ROOT + '\\pipeline.pkl')

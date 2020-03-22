@@ -1,11 +1,3 @@
-from preprocessing_data.binning import *
-from preprocessing_data.log_transformation import *
-import pandas as pd
-import os
-import tarfile
-from six.moves import urllib
-from matplotlib import pyplot as plt
-import numpy as np
 import featuretools as ft
 #
 #

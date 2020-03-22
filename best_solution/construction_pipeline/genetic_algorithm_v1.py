@@ -1,12 +1,11 @@
-from deap import creator, base, tools, gp
+from deap import creator, base, tools
 import random
 import numpy as np
 import pandas as pd
-from construction_pipeline.models import preprocessing_models, selection_models, classification_models
+from best_solution.construction_pipeline.models import preprocessing_models, selection_models, classification_models
 from copy import deepcopy,copy
 # from sklearn import preprocessing
 # from sklearn import feature_selection
-import sklearn
 # from sklearn import ensemble
 from sklearn.pipeline import  make_pipeline
 from sklearn.model_selection import cross_val_score, train_test_split

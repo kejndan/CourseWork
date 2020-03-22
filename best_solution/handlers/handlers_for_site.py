@@ -1,7 +1,4 @@
 from best_solution.settings import MEDIA_ROOT
-from construction_pipeline.genetic_algorithm import GeneticClassification, GeneticRegression
-from sklearn.model_selection import train_test_split
-import pandas as pd
 import os
 import numpy as np
 

@@ -27,34 +27,34 @@ selection_models = {
     'sklearn.feature_selection.VarianceThreshold': {
         'threshold': np.array([0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.2]) # not change
     },
-    # 'sklearn.feature_selection.SelectKBest': {
-    #     'k': np.arange(1, 101)
-    # },
-    # 'sklearn.feature_selection.SelectPercentile': {
-    #     'percentile': np.arange(1, 100)
-    # },
-    # 'sklearn.feature_selection.SelectFwe': {
-    #     'alpha': np.arange(0, 0.05, 0.001)
-    # },
-    # 'sklearn.feature_selection.RFE': {
-    #     'step': np.arange(0.05, 1.01, 0.05),
-    #     'estimator': {
-    #         'sklearn.ensemble.ExtraTreesClassifier': {
-    #             'n_estimators': np.array([100]),
-    #             'criterion': np.array(['gini', 'entropy']),
-    #             'max_features': np.arange(0.05, 1.01, 0.05)
-    #         }
-    #     }
-    # },
-    # 'sklearn.feature_selection.SelectFromModel' : {
-    #     'threshold' : np.arange(0, 1.01, 0.05),
-    #     'estimator' : {
-    #         'sklearn.ensemble.ExtraTreesRegressor' : {
-    #             'n_estimators' : np.array([100]),
-    #             'max_features' : np.arange(0.05, 1.01, 0.05)
-    #         }
-    #     }
-    # }
+    'sklearn.feature_selection.SelectKBest': {
+        'k': np.arange(1, 101)
+    },
+    'sklearn.feature_selection.SelectPercentile': {
+        'percentile': np.arange(1, 100)
+    },
+    'sklearn.feature_selection.SelectFwe': {
+        'alpha': np.arange(0, 0.05, 0.001)
+    },
+    'sklearn.feature_selection.RFE': {
+        'step': np.arange(0.05, 1.01, 0.05),
+        'estimator': {
+            'sklearn.ensemble.ExtraTreesClassifier': {
+                'n_estimators': np.array([100]),
+                'criterion': np.array(['gini', 'entropy']),
+                'max_features': np.arange(0.05, 1.01, 0.05)
+            }
+        }
+    },
+    'sklearn.feature_selection.SelectFromModel' : {
+        'threshold' : np.arange(0, 1.01, 0.05),
+        'estimator' : {
+            'sklearn.ensemble.ExtraTreesRegressor' : {
+                'n_estimators' : np.array([100]),
+                'max_features' : np.arange(0.05, 1.01, 0.05)
+            }
+        }
+    }
 }
 classification_models = {
     'sklearn.tree.DecisionTreeClassifier': {

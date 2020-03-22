@@ -1,13 +1,12 @@
 import numpy as np
 from collections import Counter
-from preprocessing_data.binning import _entropy
+from best_solution.preprocessing_data.binning import _entropy
 import pandas as pd
 from scipy.spatial.distance import pdist, squareform
 from sklearn.linear_model import Ridge
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVR
 from tpot import TPOTClassifier
 from time import time
 

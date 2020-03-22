@@ -2,7 +2,7 @@ from deap import creator, base, tools
 from sklearn.metrics import mean_squared_error
 from inspect import types
 import random
-from sklearn.model_selection import cross_validate, train_test_split, cross_val_score
+from sklearn.model_selection import cross_validate, train_test_split
 from copy import deepcopy
 from sklearn.model_selection import GridSearchCV
 import numpy as np
@@ -10,13 +10,9 @@ from sklearn.pipeline import make_pipeline
 from construction_pipeline.models import preprocessing_models, selection_models, classification_models, regression_models, clustering_models
 from time import time
 import pandas as pd
-from sklearn import preprocessing
-from sklearn import feature_selection
-from sklearn import cluster
-from sklearn import naive_bayes
 import sklearn
-from sklearn import ensemble
 import warnings
+from sklearn import ensemble, preprocessing, feature_selection, tree, linear_model, neighbors, naive_bayes, svm
 from sklearn.metrics import accuracy_score
 from datetime import datetime
 from func_timeout import func_timeout, FunctionTimedOut

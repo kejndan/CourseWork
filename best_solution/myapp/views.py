@@ -1,18 +1,15 @@
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.urls import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
 # Imaginary function to handle an uploaded file.
 from handlers.handlers_for_site import handle_uploaded_file, remove_folder_contents,get_names,prepare_for_json
 from best_solution.settings import MEDIA_ROOT, THREAD
-from threading import Thread
 from multiprocessing import Process
 from handlers.core import algorithm_manager
 import os
 import numpy as np
 import json
-from django.core import serializers
 import shutil
 import pickle
 
@@ -97,7 +94,7 @@ def processing(request):
 
 def working(request):
     if request.method == 'POST':
-        if THREAD[0].is_alive():
+        if THREAD[0] and THREAD[0].is_alive():
             THREAD[0].terminate()
         else:
             if os.path.isfile(MEDIA_ROOT+'\output.txt') :

@@ -227,6 +227,7 @@ def prepared(request):
             pipeline = pickle.load(open(MEDIA_ROOT + '\\pipeline.pkl', 'rb'))
             print(select_features)
             result = pd.DataFrame(pipeline.predict(select_features))
+
             return render(request, 'myapp/prepared.html',
                           {'columns_feature' : names_select_features,
                            'rows_feature' : select_features.to_dict('records'),

@@ -230,12 +230,3 @@ def prepared(request):
                            'rows_feature' : select_features.to_dict('records'),
                            'column_targets' : 'Target', 'rows_targets' : result.to_dict('records'),
                            'status_checkboxes' : status_checkboxes})
-
-
-
-
-
-
-
-
-

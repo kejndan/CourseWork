@@ -1,16 +1,25 @@
 import numpy as np
 from collections import Counter
-from preprocessing_data.binning import _entropy
+# from tpot import TPOTClassifier
 import pandas as pd
 from scipy.spatial.distance import pdist, squareform
 from sklearn.linear_model import Ridge
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVR
-from tpot import TPOTClassifier
-from time import time
-
+from sklearn.linear_model import LogisticRegression
+# from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import PolynomialFeatures
+from stability_selection import RandomizedLasso
+from preprocessing_data.binning import _entropy
 
 class FeatureSelect :
     def __init__(self, data, labels) :
@@ -88,6 +97,7 @@ class FeatureSelect :
         y_test = np.array(test[test.columns[-1]])
         new_train, new_test = np.empty((train.shape[0], 0)), np.empty((test.shape[0], 0))
         clf = LassoCV(cv=5, tol=0.1)
+        clf = RandomizedLasso()
         clf.fit(x_train, y_train)
         for i in range(x_train.shape[1]) :
             if clf.coef_[i] > .1 and self.information_gain(x_train[:, i]) > alpha :
@@ -166,73 +176,84 @@ class FeatureSelect :
 
 
 if __name__ == '__main__':
-    # clf = Lasso()
-    # a = np.array([[x,x] for x in range(30)])
-    # b = np.array([-x + 20 for x in range(30)])
-    # clf.fit(a,b)
-    # x,y = a.shape
-    # names = np.arange(y)
-    # val = sorted(zip(map(lambda x: round(x, 4), clf.scores_),
-    #                  names), reverse=True)
-    # print(val)
     df = pd.read_csv('../datasets/sonar.csv')
-    # df = df.drop(df.index[200 :])
-    # x_train, x_test, y_train, y_test = train_test_split(df)
+    # df = df.dropna()
+    df = df.drop(df.columns[0],1)
+    # df = df.drop(df.index[14000:],0)
+    # SS = StandardScaler()
+    # MMS = MinMaxScaler()
+    # df = pd.DataFrame(SS.fit_transform(df))
     # print(df.transpose)
     # df = np.transpose(df)
-    # df = df.dropna
     print(df)
-    FS = FeatureSelect(np.array(df.drop(df.columns[-1], 1)), np.array(df[df.columns[-1]]))
-    print(FS.data, FS.labels)
-    data = FS.main(.1, .5)
-
-    df = pd.DataFrame(data)
-    print(df)
-    x_train, x_test, y_train, y_test = train_test_split(df.drop(df.columns[-1], 1),df[df.columns[-1]],test_size=.2,random_state=42)
-    s = time()
-    tpot = TPOTClassifier(generations=5,population_size=30, verbosity=2, n_jobs=1)
-    tpot.fit(x_train,y_train)
-    print(time()-s)
-    print(tpot.score(x_test, y_test))
-    # X = np.array(df.drop(df.columns[-1], 1))
-    # y = np.array(df[df.columns[-1]])
-    # x1 = np.array(train_set.drop(train_set.columns[-1],1))
-    # y1 = np.array(train_set[train_set.columns[-1]])
-    # x2 = np.array(test_set.drop(test_set.columns[-1], 1))
-    # y2 = np.array(test_set[test_set.columns[-1]])
-    # print(x1.shape,y1.shape,x2.shape,y2.shape)
-    # # n_samples, n_features = x1.shape
-    # rng = SVR(C=1.0, epsilon=.2)
-    # rng2 = SVR(C=1.0, epsilon=.2)
-    # rng.fit(x1,y1)
-    # # print(x1.shape,y1.shape)
-    # print(rng.score(x2,y2))
-    # # a = np.array([[x,x,x] for x in range(100)])
-    # # b = np.array([x for x in range(100)])
-    # # print(x1,y1)
-    # FS = FeatureSelect(X,y)
-    # print(X.shape,y.shape)
-    # x3,y3,x4,y4 = FS.main(.1,0.5)
-    # print(x3.shape, y3.shape, x4.shape, y4.shape)
-    # print('x3',x3.shape)
-    # rng2.fit(x3,y3)
-    # print(rng2.score(x4,y4))
-    # # print('x3',x3)
-    # # rng.fit(x3,y1)
-    # # FS1 = FeatureSelect(x2,y2)
-    # # x4 = FS1.main(.1,.5)
-    # # print('x4',x4.shape)
-    # # print(rng.score(x3,y1))
-    # # q = FS.main(.5,.6)
-    # # print(q)
-    # # FS = FeatureSelect(np.array([1,1,1,1,0,0,0,1,0,0,0,1,0,1]),np.array([0,0,1,1,1,0,1,0,1,1,1,1,1,0]))
-    # # outlook = np.array([0,0,1,2,2,2,1,0,0,2,0,1,1,2])
-    # # temperature = np.array([0,0,0,1,2,2,2,1,2,1,1,1,0,1])
-    # # # print(FS.preprocessing_data(temperature))
-    # # a = np.array([1,2,3,4,5,6])
-    # # b = np.array([1,4,9,16,25,36])
-    # # a1 = np.array([1,2,3,4,5])
-    # # b1 = np.array([-1,-2,-3,-4,-5])
-    # # print(FS.dist_corr(a1,b1))
-    # # print(1-correlation(a1,b1))
-    #
+    train_set, test_set = train_test_split(df, test_size=.2, random_state=42)
+    X = np.array(df.drop(df.columns[-1], 1))
+    # X = SS.fit_transform(X)
+    y = np.array(df[df.columns[-1]])
+    x1 = np.array(train_set.drop(train_set.columns[-1], 1))
+    # x1 = MMS.fit_transform(SS.fit_transform(x1))
+    y1 = np.array(train_set[train_set.columns[-1]])
+    x2 = np.array(test_set.drop(test_set.columns[-1], 1))
+    # x2 = MMS.fit_transform(SS.fit_transform(x2))
+    y2 = np.array(test_set[test_set.columns[-1]])
+    print(x1.shape, y1.shape, x2.shape, y2.shape)
+    # n_samples, n_features = x1.shape
+    knn = KNeighborsClassifier()
+    lr = LogisticRegression()
+    rf = RandomForestClassifier()
+    ab = AdaBoostClassifier()
+    nn = MLPClassifier()
+    dt = ExtraTreesClassifier()
+    # ln = LinearRegression()
+    knn.fit(x1, y1)
+    lr.fit(x1, y1)
+    rf.fit(x1, y1)
+    ab.fit(x1, y1)
+    nn.fit(x1, y1)
+    dt.fit(x1, y1)
+    a = knn.score(x2, y2)
+    b = lr.score(x2, y2)
+    c = rf.score(x2, y2)
+    d = ab.score(x2, y2)
+    e = nn.score(x2, y2)
+    f = dt.score(x2, y2)
+    with open('result.txt', 'a', encoding='utf-8') as file :
+        file.write('Breast cancer\n')
+        file.write('KNN {0}\n'.format(a))
+        file.write('LR {0}\n'.format(b))
+        file.write('RF {0}\n'.format(c))
+        file.write('AB {0}\n'.format(d))
+        file.write('NN {0}\n'.format(e))
+        file.write('DT {0}\n'.format(f))
+    from copy import deepcopy
+    result = {'KNN':[],'LR':[],'RF':[],'AB':[],'NN':[],'DT':[]}
+    for i in range(5):
+        FS = FeatureSelect(X, y)
+        x3, y3, x4, y4 = FS.main(.1, 0.4)
+        old_x3 = deepcopy(x3)
+        old_x4 = deepcopy(x4)
+        print(x3)
+        # pca = PCA(svd_solver='randomized',iterated_power=10).fit(x3)
+        # x3 = pca.transform(x3)
+        # x4 = pca.transform(x4)
+        print()
+        knn.fit(x3, y3)
+        lr.fit(x3, y3)
+        rf.fit(x3, y3)
+        ab.fit(x3, y3)
+        nn.fit(x3, y3)
+        dt.fit(x3, y3)
+        result['KNN'].append(knn.score(x4, y4))
+        result['LR'].append(lr.score(x4, y4))
+        result['RF'].append(rf.score(x4, y4))
+        result['AB'].append(ab.score(x4, y4))
+        result['NN'].append(nn.score(x4, y4))
+        result['DT'].append(dt.score(x4, y4))
+        print('KNN ', knn.score(x4, y4), 'D ', knn.score(x4, y4) - a)
+        print('LR ', lr.score(x4, y4), 'D ', lr.score(x4, y4) - b)
+        print('RF ', rf.score(x4, y4), 'D ', rf.score(x4, y4) - c)
+        print('AB ', ab.score(x4, y4), 'D ', ab.score(x4, y4) - d)
+        print('NN ', nn.score(x4, y4), 'D ', nn.score(x4, y4) - e)
+        print('DT ', dt.score(x4, y4), 'D ', dt.score(x4, y4) - f)
+    for k,v in result.items():
+        print(k,np.array(v).mean())

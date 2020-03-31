@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.spatial.distance import pdist, squareform
 from sklearn.linear_model import Ridge
 from sklearn.kernel_ridge import KernelRidge
-from sklearn.linear_model import LassoCV
+from sklearn.linear_model import LassoCV, LassoLarsIC
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 # from sklearn.linear_model import LinearRegression
@@ -25,6 +25,9 @@ class FeatureSelect :
     def __init__(self, data, labels) :
         self.data = data
         self.labels = labels
+        self.displaying_table1 = [[], []]
+        self.displaying_table2 = [[],[],[]]
+        self.displaying_table3 = [[], []]
 
     def information_gain(self, column) :
         count_labels = np.array(sorted(Counter(self.labels).items())).astype(np.float32)
@@ -59,6 +62,8 @@ class FeatureSelect :
         new_data = np.empty((self.data.shape[0], 0))
         for i in range(self.data.shape[1]) :
             if self.information_gain(self.data[:, i]) > alpha :
+                self.displaying_table1[0].append(i)
+                self.displaying_table1[1].append(len(new_data[0]))
                 new_data = np.hstack([new_data, self.data[:, i][:, np.newaxis]])
         if report :
             print('Shape of data after PreProcessing ', new_data.shape)
@@ -71,11 +76,19 @@ class FeatureSelect :
             for j in range(data.shape[1]) :
                 corr = self.dist_corr(data[:, i], data[:, j])
                 if i != j and corr > 0 :
-                    if corr < beta :
+                    if corr < beta:
                         clf = KernelRidge(alpha=1.0, coef0=1, degree=3, gamma=None, kernel='rbf',
                                           kernel_params=None)
+                        type_trans = 'KRR'
                     elif beta <= corr <= 1 :
                         clf = Ridge(alpha=1.0)
+                        type_trans = 'KR'
+                    self.displaying_table2[0].append((i,j))
+                    self.displaying_table2[0].append((i, j))
+                    self.displaying_table2[1].append(type_trans)
+                    self.displaying_table2[1].append('-'+type_trans)
+                    self.displaying_table2[2].append(len(new_data[0]))
+                    self.displaying_table2[2].append(len(new_data[0])+1)
                     f_i = data[:, i][:, np.newaxis]
                     f_j = data[:, j]
                     f = clf.fit(f_i, f_j).predict(f_i)
@@ -97,23 +110,49 @@ class FeatureSelect :
         y_test = np.array(test[test.columns[-1]])
         new_train, new_test = np.empty((train.shape[0], 0)), np.empty((test.shape[0], 0))
         clf = LassoCV(cv=5, tol=0.1)
-        clf = RandomizedLasso()
+        clf = RandomizedLasso(alpha=0)
         clf.fit(x_train, y_train)
         for i in range(x_train.shape[1]) :
-            if clf.coef_[i] > .1 and self.information_gain(x_train[:, i]) > alpha :
+            print(i)
+            # t = np.round(clf.coef_,3)
+            if clf.coef_[i] > 0.0 and self.information_gain(x_train[:, i]) > alpha :
+                self.displaying_table3[0].append(i)
+                self.displaying_table3[1].append(len(new_train[0]))
                 new_train = np.hstack([new_train, x_train[:, i][:, np.newaxis]])
                 new_test = np.hstack([new_test, x_test[:, i][:, np.newaxis]])
         if report :
             print()
-            print('Shape of data after feature selection ', x_train.shape, x_test.shape)
-        return x_train, y_train, x_test, y_test
+            print('Shape of data after feature selection ', new_train.shape, new_test.shape)
+        return new_train, y_train, new_test, y_test
+        # return x_train, y_train, x_test, y_test
+
+    def stat_feature(self):
+        stats = [0 for _ in range(len(self.data[0]))]
+        for index in range(len(self.displaying_table3[1])):
+                i = self.displaying_table3[0][index]
+                f_pq = self.displaying_table2[2][self.displaying_table2[2].index(i)]
+                p1, q1 = self.displaying_table2[0][self.displaying_table2[2].index(f_pq)]
+                p = self.displaying_table1[0][self.displaying_table1[1].index(p1)]
+                q = self.displaying_table1[0][self.displaying_table1[1].index(q1)]
+                stats[p] += 1
+                stats[q] += 1
+        return stats
+
+
 
     def main(self, alpha, beta) :
         data = self.pre_processing(alpha)
         data = self.feature_generation(data, beta)
+        # split_data = PCA(n_components=self.data.shape[1]).fit_transform(data)
+        # data = np.hstack([split_data,self.labels[:, np.newaxis]])
+        # train, test = train_test_split(pd.DataFrame(data), test_size=.2)
+        # x_train = np.array(train.drop(train.columns[-1],1))
+        # y_train = np.array(train[train.columns[-1]])
+        # x_test = np.array(test.drop(test.columns[-1], 1))
+        # y_test = np.array(test[test.columns[-1]])
         data = self.feature_selection(data, alpha)
         return data
-
+        # return x_train, y_train, x_test,y_test
     def old_main(self, n1, n2):
         self.new_data1 = []
         self.new_data2 = []
@@ -178,7 +217,7 @@ class FeatureSelect :
 if __name__ == '__main__':
     df = pd.read_csv('../datasets/sonar.csv')
     # df = df.dropna()
-    df = df.drop(df.columns[0],1)
+    # df = df.drop(df.columns[0],1)
     # df = df.drop(df.index[14000:],0)
     # SS = StandardScaler()
     # MMS = MinMaxScaler()
@@ -227,9 +266,16 @@ if __name__ == '__main__':
         file.write('DT {0}\n'.format(f))
     from copy import deepcopy
     result = {'KNN':[],'LR':[],'RF':[],'AB':[],'NN':[],'DT':[]}
-    for i in range(5):
+    all_stats = np.zeros(len(x1[0]))
+    for i in range(3):
+        # x,_ = train_test_split(df, test_size=.8)
+        # xs = np.array(x.drop(x.columns[-1], 1))
+        # ys = np.array(x[x.columns[-1]])
         FS = FeatureSelect(X, y)
+        # FS = FeatureSelect(xs, ys)
         x3, y3, x4, y4 = FS.main(.1, 0.4)
+        stats = FS.stat_feature()
+        all_stats = all_stats+np.array(stats)
         old_x3 = deepcopy(x3)
         old_x4 = deepcopy(x4)
         print(x3)
@@ -257,3 +303,4 @@ if __name__ == '__main__':
         print('DT ', dt.score(x4, y4), 'D ', dt.score(x4, y4) - f)
     for k,v in result.items():
         print(k,np.array(v).mean())
+    print(all_stats)

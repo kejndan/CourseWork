@@ -1,19 +1,21 @@
+# coding=utf8
+from math_func.math import dist_corr, entropy
 import numpy as np
 from collections import Counter
 # from tpot import TPOTClassifier
 import pandas as pd
-from scipy.spatial.distance import pdist, squareform
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import Ridge
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.linear_model import LassoCV, LassoLarsIC
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression
 # from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import AdaBoostClassifier, AdaBoostRegressor
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
@@ -21,20 +23,27 @@ from sklearn.preprocessing import PolynomialFeatures
 from stability_selection import RandomizedLasso
 from preprocessing_data.binning import _entropy
 
-class FeatureSelect :
-    def __init__(self, data, labels) :
-        self.data = data
-        self.labels = labels
-        self.displaying_table1 = [[], []]
-        self.displaying_table2 = [[],[],[]]
-        self.displaying_table3 = [[], []]
 
-    def information_gain(self, column) :
+class FeatureSelect:
+    def __init__(self, change_features, labels, no_change_features=None):
+        self.data = change_features
+        self.labels = labels
+        self.no_change_features = no_change_features
+        # self.displaying_table1 = [[], []]
+        # self.displaying_table2 = [[], [], []]
+        # self.displaying_table3 = [[], []]
+
+    def information_gain(self, column):
+        """
+        Данная функция подсчитывает информативность признака
+        :param column: передаваемый признак
+        :return: information_gain признака(чем больше ig тем сильнее корреляция)
+        """
         count_labels = np.array(sorted(Counter(self.labels).items())).astype(np.float32)
-        h_y = _entropy(count_labels[:, 1], sum(count_labels[:, 1]))
+        h_y = entropy(count_labels[:, 1], sum(count_labels[:, 1]))
         count_data = np.array(sorted(Counter(column).items())).astype(np.float32)
         data_frame = pd.DataFrame(data=[column, self.labels], dtype=np.float32).transpose()
-        for i in range(len(count_data)) :
+        for i in range(len(count_data)):
             indexes = data_frame[data_frame[0] != count_data[i, 0]].index
             temp_df = data_frame.drop(indexes)
             sub_count_labels = np.array(sorted(Counter(temp_df[1]).items())).astype(np.float32)
@@ -42,53 +51,49 @@ class FeatureSelect :
             h_y -= count_data[i, 1] * sub_h_y / sum(count_data[:, 1])
         return h_y
 
-    def dist_corr(self, u, v) :
-        X = u[:, None]
-        Y = v[:, None]
-        n = len(X)
-        a = squareform(pdist(X))
-        b = squareform(pdist(Y))
-        A = a - a.mean(axis=0)[None, :] - a.mean(axis=1)[:, None] + a.mean()
-        B = b - b.mean(axis=0)[None, :] - b.mean(axis=1)[:, None] + b.mean()
-        dcov2_xy = (A * B).sum() / float(n * n)
-        dcov2_xx = (A * A).sum() / float(n * n)
-        dcov2_yy = (B * B).sum() / float(n * n)
-        if np.sqrt(np.sqrt(dcov2_xx) * np.sqrt(dcov2_yy)) == 0 :
-            return 0
-        dcor = np.sqrt(dcov2_xy) / np.sqrt(np.sqrt(dcov2_xx) * np.sqrt(dcov2_yy))
-        return dcor
-
-    def pre_processing(self, alpha, report=True) :
+    def pre_processing(self, alpha, report=True):
+        """
+        Данная функция удаляет лишнии признаки на основании функции information_gain
+        :param alpha: порог информативности
+        :param report: информация после выполненной обработки
+        :return: сокращенное пространство признаков
+        """
         new_data = np.empty((self.data.shape[0], 0))
-        for i in range(self.data.shape[1]) :
-            if self.information_gain(self.data[:, i]) > alpha :
-                self.displaying_table1[0].append(i)
-                self.displaying_table1[1].append(len(new_data[0]))
-                new_data = np.hstack([new_data, self.data[:, i][:, np.newaxis]])
-        if report :
+        for num_feature in range(self.data.shape[1]):
+            if self.information_gain(self.data[:, num_feature]) > alpha:
+                # self.displaying_table1[0].append(num_feature)
+                # self.displaying_table1[1].append(len(new_data[0]))
+                new_data = np.hstack([new_data, self.data[:, num_feature][:, np.newaxis]])
+        if report:
             print('Shape of data after PreProcessing ', new_data.shape)
         return new_data
 
-    def feature_generation(self, data, beta, report=True) :
+    def feature_generation(self, data, beta, report=True):
+        """
+        Данная функция создает новое пространство признаков с помощью Ridge и Kernel Ridge Regression
+        :param data: старое пространство признаков
+        :param beta: порог distance correlation при котором мы выбираем либо RR или KRR
+        :param report: информация после выполненной обработки
+        :return: новое пространство признаков
+        """
         new_data = np.empty((data.shape[0], 0))
-        count = 0
-        for i in range(data.shape[1]) :
-            for j in range(data.shape[1]) :
-                corr = self.dist_corr(data[:, i], data[:, j])
-                if i != j and corr > 0 :
+        # count = 0
+        for i in range(data.shape[1]):
+            for j in range(data.shape[1]):
+                corr = dist_corr(data[:, i], data[:, j])
+                if i != j and corr > 0:
                     if corr < beta:
-                        clf = KernelRidge(alpha=1.0, coef0=1, degree=3, gamma=None, kernel='rbf',
-                                          kernel_params=None)
-                        type_trans = 'KRR'
-                    elif beta <= corr <= 1 :
+                        clf = KernelRidge(alpha=1.0, coef0=1, degree=3, gamma=None, kernel='rbf', kernel_params=None)
+                        # type_trans = 'KRR'
+                    elif beta <= corr <= 1:
                         clf = Ridge(alpha=1.0)
-                        type_trans = 'KR'
-                    self.displaying_table2[0].append((i,j))
-                    self.displaying_table2[0].append((i, j))
-                    self.displaying_table2[1].append(type_trans)
-                    self.displaying_table2[1].append('-'+type_trans)
-                    self.displaying_table2[2].append(len(new_data[0]))
-                    self.displaying_table2[2].append(len(new_data[0])+1)
+                        # type_trans = 'KR'
+                    # self.displaying_table2[0].append((i, j))
+                    # self.displaying_table2[0].append((i, j))
+                    # self.displaying_table2[1].append(type_trans)
+                    # self.displaying_table2[1].append('-'+type_trans)
+                    # self.displaying_table2[2].append(len(new_data[0]))
+                    # self.displaying_table2[2].append(len(new_data[0])+1)
                     f_i = data[:, i][:, np.newaxis]
                     f_j = data[:, j]
                     f = clf.fit(f_i, f_j).predict(f_i)
@@ -96,35 +101,53 @@ class FeatureSelect :
                     new_data = np.hstack([new_data, (f_j - f)[:, np.newaxis]])
                 # if count % 10 == 0 :
                 #     print(count, end=' ')
-                count += 1
-        if report :
+                # count += 1
+        if report:
             print('Shape of data after feature generation ', new_data.shape)
         return new_data
 
-    def feature_selection(self, data, alpha, report=True) :
+    def train_test_split(self, data, test_size=0.2, return_mask=False):
+        mask = np.array(np.arange(len(self.labels)))
+        np.random.shuffle(mask)
+        if return_mask:
+            return data[mask][:int(test_size * len(self.labels))], data[mask][int(test_size * len(self.labels)):], mask
+        else:
+            return data[mask][:int(test_size * len(self.labels))], data[mask][int(test_size * len(self.labels)):]
+
+    def feature_selection(self, data, alpha, report=True):
+        """
+        Данная функция очищает признакое пространство от слабых признаков через RandomizedLasso и
+         information_gain
+        :param data: признаковое пространство
+        :param alpha: порог информативности
+        :param report: информация после выполненной обработки
+        :return: окончательное признаковое простаранство
+        """
         data = np.hstack([data, self.labels[:, np.newaxis]])
-        train, test = train_test_split(pd.DataFrame(data), test_size=.2)
-        x_train = np.array(train.drop(train.columns[-1], 1))
-        y_train = np.array(train[train.columns[-1]])
-        x_test = np.array(test.drop(test.columns[-1], 1))
-        y_test = np.array(test[test.columns[-1]])
+        train, test, mask = self.train_test_split(data, return_mask=True)
+        # x_train = np.array(train.drop(train.columns[-1], 1))
+        # y_train = np.array(train[train.columns[-1]])
+        # x_test = np.array(test.drop(test.columns[-1], 1))
+        # y_test = np.array(test[test.columns[-1]])
+        x_train = train[:, :-1]
+        y_train = train[:, -1:]
+        x_test = test[:, :-1]
+        y_test = test[:, -1:]
         new_train, new_test = np.empty((train.shape[0], 0)), np.empty((test.shape[0], 0))
-        clf = LassoCV(cv=5, tol=0.1)
         clf = RandomizedLasso(alpha=0)
         clf.fit(x_train, y_train)
-        for i in range(x_train.shape[1]) :
-            print(i)
-            # t = np.round(clf.coef_,3)
-            if clf.coef_[i] > 0.0 and self.information_gain(x_train[:, i]) > alpha :
-                self.displaying_table3[0].append(i)
-                self.displaying_table3[1].append(len(new_train[0]))
+        for i in range(x_train.shape[1]):
+            if clf.coef_[i] > 0.0 and self.information_gain(x_train[:, i]) > alpha:
+                # self.displaying_table3[0].append(i)
+                # self.displaying_table3[1].append(len(new_train[0]))
                 new_train = np.hstack([new_train, x_train[:, i][:, np.newaxis]])
                 new_test = np.hstack([new_test, x_test[:, i][:, np.newaxis]])
-        if report :
-            print()
+        if self.no_change_features is not None:
+            new_train = np.concatenate((x_train, self.no_change_features[mask][:int(0.2 * len(self.labels))]), axis=1)
+            new_test = np.concatenate((x_test, self.no_change_features[mask][int(0.2 * len(self.labels)):]), axis=1)
+        if report:
             print('Shape of data after feature selection ', new_train.shape, new_test.shape)
         return new_train, y_train, new_test, y_test
-        # return x_train, y_train, x_test, y_test
 
     def stat_feature(self):
         stats = [0 for _ in range(len(self.data[0]))]
@@ -138,95 +161,29 @@ class FeatureSelect :
                 stats[q] += 1
         return stats
 
-
-
     def main(self, alpha, beta) :
         data = self.pre_processing(alpha)
         data = self.feature_generation(data, beta)
-        # split_data = PCA(n_components=self.data.shape[1]).fit_transform(data)
-        # data = np.hstack([split_data,self.labels[:, np.newaxis]])
-        # train, test = train_test_split(pd.DataFrame(data), test_size=.2)
-        # x_train = np.array(train.drop(train.columns[-1],1))
-        # y_train = np.array(train[train.columns[-1]])
-        # x_test = np.array(test.drop(test.columns[-1], 1))
-        # y_test = np.array(test[test.columns[-1]])
         data = self.feature_selection(data, alpha)
         return data
-        # return x_train, y_train, x_test,y_test
-    def old_main(self, n1, n2):
-        self.new_data1 = []
-        self.new_data2 = []
-        self.new_data3 = []
-        for i in range(self.data.shape[1]):
-            if self.information_gain(self.data[:,i]) > n1:
-                self.new_data1.append(self.data[:,i])
-        self.new_data1 = np.transpose(np.array(self.new_data1))
-        print('1',self.new_data1.shape)
-        for i in range(self.new_data1.shape[1]):
-            for j in range(self.new_data1.shape[1]):
-                corr = self.dist_corr(self.new_data1[:,i],self.new_data1[:,j])
-                if i != j and corr != 0:
-                    if corr > 0 and corr < n2:
-                        clf = KernelRidge(alpha=1.0)
-                        f_i = self.new_data1[:,i].reshape(-1,1)
-                        f_j = self.new_data1[:,j]
-                        f = clf.fit(f_i,f_j).predict(f_i)
-                        self.new_data2.append(f)
-                        self.new_data2.append(f_j-f)
-                    elif corr >= n2 and corr <=1:
-                        clf = Ridge(alpha=1.0)
-                        f_i = self.new_data1[:,i].reshape(-1, 1)
-                        f_j = self.new_data1[:,j]
-                        f = clf.fit(f_i, f_j).predict(f_i)
-                        self.new_data2.append(f)
-                        self.new_data2.append(f_j - f)
-        self.new_data2 = np.transpose(np.array(self.new_data2))
-        # print(self.new_data2)
-        train, test = train_test_split(pd.DataFrame(self.new_data2), test_size=.2)
-        x_train = np.array(train.drop(train.columns[-1],1))
-        y_train = np.array(train[train.columns[-1]])
-        x_test = np.array(test.drop(test.columns[-1], 1))
-        y_test = np.array(test[test.columns[-1]])
-        clf = LassoCV(cv=5,tol=0.1)
-        clf.fit(x_train,y_train)
-        # print(self.new_data2.shape,self.labels.shape)
-        new_train = []
-        new_test = []
-        for i in range(x_train.shape[1]):
-            # if clf.coef_[i] > .1:
-            if clf.coef_[i] > .1 and self.information_gain(x_train[:,i]) > n1:
-                # self.new_data3.append(self.new_data2[:,i])
-                new_train.append(x_train[:, i])
-                new_test.append(x_test[:,i])
-        # self.new_data3 = np.transpose(np.array(self.new_data3))
-        # self.new_data3 = np.array(self.new_data3)
-
-
-
-        return np.transpose(np.array(new_train)), y_train,np.transpose(np.array(new_test)), y_test
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('../datasets/sonar.csv')
+    df = pd.read_csv('../datasets/Fish.csv')
     # df = df.dropna()
-    # df = df.drop(df.columns[0],1)
+    # X1 = np.array(df.drop(df.columns[-1], 1))
+    df = df.drop(df.columns[0],1)
     # df = df.drop(df.index[14000:],0)
     # SS = StandardScaler()
     # MMS = MinMaxScaler()
     # df = pd.DataFrame(SS.fit_transform(df))
     # print(df.transpose)
     # df = np.transpose(df)
+
     print(df)
     train_set, test_set = train_test_split(df, test_size=.2, random_state=42)
     X = np.array(df.drop(df.columns[-1], 1))
+    X1 = X
     # X = SS.fit_transform(X)
     y = np.array(df[df.columns[-1]])
     x1 = np.array(train_set.drop(train_set.columns[-1], 1))
@@ -237,13 +194,18 @@ if __name__ == '__main__':
     y2 = np.array(test_set[test_set.columns[-1]])
     print(x1.shape, y1.shape, x2.shape, y2.shape)
     # n_samples, n_features = x1.shape
-    knn = KNeighborsClassifier()
-    lr = LogisticRegression()
-    rf = RandomForestClassifier()
-    ab = AdaBoostClassifier()
-    nn = MLPClassifier()
-    dt = ExtraTreesClassifier()
-    # ln = LinearRegression()
+    # knn = KNeighborsClassifier()
+    # lr = LogisticRegression()
+    # rf = RandomForestClassifier()
+    # ab = AdaBoostClassifier()
+    # nn = MLPClassifier()
+    # dt = ExtraTreesClassifier()
+    knn = KNeighborsRegressor()
+    lr = LinearRegression()
+    rf = RandomForestRegressor()
+    ab = AdaBoostRegressor()
+    dt = ExtraTreesRegressor()
+    nn = MLPRegressor()
     knn.fit(x1, y1)
     lr.fit(x1, y1)
     rf.fit(x1, y1)
@@ -267,15 +229,17 @@ if __name__ == '__main__':
     from copy import deepcopy
     result = {'KNN':[],'LR':[],'RF':[],'AB':[],'NN':[],'DT':[]}
     all_stats = np.zeros(len(x1[0]))
-    for i in range(3):
+    for i in range(1):
         # x,_ = train_test_split(df, test_size=.8)
         # xs = np.array(x.drop(x.columns[-1], 1))
         # ys = np.array(x[x.columns[-1]])
-        FS = FeatureSelect(X, y)
+        X = np.array(X1)
+        enc = OneHotEncoder()
+        FS = FeatureSelect(X[:,1:], y, no_change_features=enc.fit_transform(X[:,:1]).toarray())
         # FS = FeatureSelect(xs, ys)
         x3, y3, x4, y4 = FS.main(.1, 0.4)
-        stats = FS.stat_feature()
-        all_stats = all_stats+np.array(stats)
+        # stats = FS.stat_feature()
+        # all_stats = all_stats+np.array(stats)
         old_x3 = deepcopy(x3)
         old_x4 = deepcopy(x4)
         print(x3)

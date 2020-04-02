@@ -1,11 +1,17 @@
 import numpy as np
 from scipy.stats import mode
-
+from preprocessing_data import binning
+import pandas as pd
+from preprocessing_data.log_transformation import to_log, to_box_cox
+from preprocessing_data import scaling
 
 class PreProcessing:
-    def __init__(self, dataset):
+    def __init__(self, dataset, index_target=None):
         self.dataset = dataset
-        self.np_dataset = np.array(self.dataset)
+        if index_target is None:
+            index_target = -1
+        self.target = np.array(self.dataset[self.dataset.columns[index_target]], dtype=np.object)
+        self.np_dataset = np.array(self.dataset.drop(self.dataset.columns[-1], 1), dtype=np.object)
 
     def processing_missing_values(self, to='auto', features=None):
         base_null = ['null', 'NULL', 'NaN', 'nan', '-', '?']
@@ -70,16 +76,63 @@ class PreProcessing:
                 self.np_dataset[(self.np_dataset[:,feature] < lower_lim), feature] = lower_lim
         return self.np_dataset
 
+    def binning(self, n_bins, type_binning='equal', features=None):
+        if features is None:
+            features = range(len(self.np_dataset[0]))
+        for feature in features:
+            if type_binning == 'equal':
+                self.np_dataset[:, feature] = binning.equal_width_binning(self.np_dataset[:, feature], n_bins, False)\
+                    .astype(str)
+            elif type_binning == 'entropy':
+                self.np_dataset[:, feature] = binning.entropy_binning(self.np_dataset[:, feature], self.target, n_bins,
+                                                                      False).astype(str)
+            else:
+                self.np_dataset[:, feature] = binning.quantile_binning(self.np_dataset[:, feature], n_bins, False)\
+                    .astype(str)
+
+            return self.np_dataset
+
+    def transform(self, type_transform='log', arg=10, features=None):
+        if features is None:
+            features = range(len(self.np_dataset[0]))
+        for feature in features:
+            if type_transform == 'log':
+                self.np_dataset[:, feature] = to_log(self.np_dataset[:, feature], arg)
+            elif type_transform == 'box-cox':
+                self.np_dataset[:, feature] = to_box_cox(self.np_dataset[:, feature])
+        return self.np_dataset
+
+    def scaling(self, type_scale='norm', features=None):
+        if features is None:
+            features = range(len(self.np_dataset[0]))
+        for feature in features:
+            if type_scale == 'norm':
+                self.np_dataset[:, feature] = scaling.normalization(self.np_dataset[:, feature])
+            elif type_scale == 'stand':
+                self.np_dataset[:, feature] = scaling.standardization(self.np_dataset[:, feature])
+            elif type_scale == 'l2-norm':
+                self.np_dataset[:, feature] = scaling.l2_normalized(self.np_dataset[:, feature])
+        return self.np_dataset
+
+    def preprocessing_manager(self, features):
+        pass
+
+
+
+
 
 if __name__ == '__main__':
-    a = np.array(np.random.rand(100)).reshape(10,10)
-    # a = np.array([[1,2,'nan'],[3,4,'nan'],['?',np.nan,3]])
-    a[1:2, 2] = 1000
-    a[3:5, 2] = -5
-    pp = PreProcessing(a)
-    b = pp.handling_outliners(factor=3, features=[2])
-    print(np.round(a))
-    print(np.round(b))
+    a = np.random.rand(100).reshape(10, 10)*100
+    b = np.random.randint(0, 2, (10,1))
+    dataset = np.concatenate((a,b),axis=1)
+    print(dataset)
+    pp = PreProcessing(pd.DataFrame(dataset),-1)
+    q = pp.binning(3, features=[0])
+    print(q)
+    # df = pd.read_csv('../datasets/Fish.csv')
+    # print(type(np.array(df)[0,1]))
+    # a = np.array([['1',2],['t',3]], dtype=np.object)
+    # print(a)
 
 
                     

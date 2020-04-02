@@ -6,7 +6,7 @@ import tarfile
 from six.moves import urllib
 from matplotlib import pyplot as plt
 import numpy as np
-import featuretools as ft
+# import featuretools as ft
 #
 #
 # DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
@@ -31,14 +31,14 @@ import featuretools as ft
 # fetch_housing_data()
 # housing = load_housing_data()
 if __name__ == '__main__':
-    data = ft.demo.load_mock_customer()
+    # data = ft.demo.load_mock_customer()
 
-    # x = [4,5,8,12,15]
-    # y = [1,2,3,3,2]
-    # merge_data = list(zip(x,y))
-    # merge_data = sorted(merge_data,key=lambda x: x[0])
-    # merge_data = np.array(merge_data).astype(np.int32)
-    # temp = entropy_binning(x,y,2)
-    # # plt.hist(y,temp)
-    # plt.show()
-    # print(temp)
+    x = [4,5,8,12,15]
+    y = [1,2,3,3,2]
+    merge_data = list(zip(x,y))
+    merge_data = sorted(merge_data,key=lambda x: x[0])
+    merge_data = np.array(merge_data).astype(np.int32)
+    temp = entropy_binning(x,y,2)
+    # plt.hist(y,temp)
+    plt.show()
+    print(temp)

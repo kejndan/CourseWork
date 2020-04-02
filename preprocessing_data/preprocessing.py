@@ -5,6 +5,7 @@ import pandas as pd
 from preprocessing_data.log_transformation import to_log, to_box_cox
 from preprocessing_data import scaling
 
+
 class PreProcessing:
     def __init__(self, dataset, index_target=None):
         self.dataset = dataset
@@ -114,23 +115,65 @@ class PreProcessing:
                 self.np_dataset[:, feature] = scaling.l2_normalized(self.np_dataset[:, feature])
         return self.np_dataset
 
-    def preprocessing_manager(self, features):
-        pass
+    def preprocessing_manager(self, **kwargs):
+        if kwargs['processing_missing_values']:
+            if not kwargs['processing_missing_values']['to']:
+                kwargs['processing_missing_values']['to'] = 'auto'
+            if not kwargs['processing_missing_values']['features']:
+                kwargs['processing_missing_values']['features'] = None
+            self.processing_missing_values(kwargs['processing_missing_values']['to'],
+                                           kwargs['processing_missing_values']['features'])
+        if kwargs['handling_outliners']:
+            if not kwargs['handling_outliners']['method']:
+                kwargs['handling_outliners']['method'] = None
+            if not kwargs['handling_outliners']['factor']:
+                kwargs['handling_outliners']['factor'] = 3
+            if not kwargs['handling_outliners']['features']:
+                kwargs['handling_outliners']['features'] = None
+            self.handling_outliners(kwargs['handling_outliners']['method'],kwargs['handling_outliners']['factor'],
+                                    kwargs['handling_outliners']['features'])
+        if kwargs['binning']:
+            if not kwargs['binning']['n_bins']:
+                kwargs['binning']['n_bins'] = 3
+            if not kwargs['binning']['type_binning']:
+                kwargs['binning']['type_binning'] = 'equal'
+            if not kwargs['binning']['features']:
+                kwargs['binning']['features'] = None
+            self.binning(kwargs['binning']['n_bins'],kwargs['binning']['type_binning'],kwargs['binning']['features'])
+        if kwargs['transform']:
+            if not kwargs['transform']['type_transform']:
+                kwargs['transform']['type_transform'] = 'log'
+            if not kwargs['transform']['arg']:
+                kwargs['transform']['arg'] = 10
+            if not kwargs['transform']['features']:
+                kwargs['transform']['features'] = None
+            self.transform(kwargs['transform']['type_transform'], kwargs['transform']['arg'],
+                           kwargs['transform']['features'])
+        if kwargs['scaling']:
+            if not kwargs['scaling']['type_scale']:
+                kwargs['scaling']['type_scale'] = 'norm'
+            if not kwargs['scaling']['features']:
+                kwargs['scaling']['features'] = None
+            self.scaling(kwargs['scaling']['type_scale'], kwargs['scaling']['features'])
+
+
+
 
 
 
 
 
 if __name__ == '__main__':
-    a = np.random.rand(100).reshape(10, 10)*100
-    b = np.random.randint(0, 2, (10,1))
-    dataset = np.concatenate((a,b),axis=1)
-    print(dataset)
-    pp = PreProcessing(pd.DataFrame(dataset),-1)
-    q = pp.binning(3, features=[0])
-    print(q)
-    # df = pd.read_csv('../datasets/Fish.csv')
-    # print(type(np.array(df)[0,1]))
+    # a = np.random.rand(100).reshape(10, 10)*100
+    # b = np.random.randint(0, 2, (10,1))
+    # dataset = np.concatenate((a,b),axis=1)
+    # print(dataset)
+    # pp = PreProcessing(pd.DataFrame(dataset),-1)
+    # q = pp.binning(3, features=[0])
+    # print(q)
+    df = pd.read_csv('../datasets/housing.csv')
+    print(df)
+    print(type(np.array(df)[0,-2]))
     # a = np.array([['1',2],['t',3]], dtype=np.object)
     # print(a)
 

@@ -95,6 +95,9 @@ class GeneticBase(object) :
                 self._terminal_storage.append(type(name_transform, (), args_transform))
 
     def _setup_toolbox(self) :
+        """
+        Инициализация toolbox для использования алгоритмов библиотеки deap
+        """
         creator.create('FitnessMulti', base.Fitness, weights=(-1.0, 1.0))
         creator.create('Individual', list, fitness=creator.FitnessMulti, info=list, time=int)
 
@@ -108,18 +111,19 @@ class GeneticBase(object) :
         self._toolbox.register('mutation', self._mutate_operator)
         self._toolbox.register('compile', self._population_to_sklearn)
 
-    def _list_variables(self, obj) :
+    def __list_variables(self, obj) :
+        """
+        Данная функция используется для получения переменных объекта
+        :param obj: передаваемый объект
+        :return: список переменных объекта
+        """
         return [i for i in dir(obj) if not i.startswith('__') and not isinstance(getattr(obj, i), CALLABLES)]
 
-    def compare_inds(self, ind1, ind2) :
-        if len(ind1) != len(ind2) :
-            return False
-        for i in range(len(ind1)) :
-            if not isinstance(ind1[i][1], type(ind2[i][1])) :
-                return False
-        return True
-
-    def add_info(self, individual) :
+    def __add_info(self, individual) :
+        """
+        Данная функция используется для записи информации о пайплайне индивида
+        :param individual: передаваемый индивид
+        """
         names = []
         for model in individual :
             names.append(model[1].name_transform)
@@ -132,14 +136,14 @@ class GeneticBase(object) :
             height = random.randint(self.min_height, self.max_height)
             for index_transforms in range(1, height) :
                 primitive_obj = random.choice(self._primitive_storage)()
-                for name_variables in self._list_variables(primitive_obj) :
+                for name_variables in self.__list_variables(primitive_obj) :
                     if name_variables == 'estimator' :
                         # print(primitive_obj.estimator)
                         name_estimator = random.choice(list(primitive_obj.estimator.keys()))
                         args_estimator = primitive_obj.estimator[name_estimator]
                         args_estimator['name_transform'] = name_estimator
                         obj_transform = type(name_estimator, (), args_estimator)()
-                        for name_variables_estimator in self._list_variables(obj_transform) :
+                        for name_variables_estimator in self.__list_variables(obj_transform) :
                             setattr(obj_transform, name_variables_estimator,
                                     random_value_from(obj_transform, name_variables_estimator))
                         setattr(primitive_obj, name_variables, self._transform_to_sklearn(obj_transform))
@@ -147,12 +151,12 @@ class GeneticBase(object) :
                         setattr(primitive_obj, name_variables, random_value_from(primitive_obj, name_variables))
                 expression.append((index_transforms, primitive_obj))
             terminal_obj = random.choice(self._terminal_storage)()
-            for name_variables in self._list_variables(terminal_obj) :
+            for name_variables in self.__list_variables(terminal_obj) :
                 setattr(terminal_obj, name_variables, random_value_from(terminal_obj, name_variables))
             expression.append((height, terminal_obj))
             count = 1
             for individual in self._control_population :
-                if self.compare_inds(individual, expression) :
+                if self._compare_inds(individual, expression) :
                     count += 1
             if count <= 0.01 * self.population_size or count <= 1 :
                 expression_added = True
@@ -294,7 +298,7 @@ class GeneticBase(object) :
             new_individual = self._shrink_mutation(individual)
         else :
             new_individual = self._insert_mutation(individual)
-        self.add_info(new_individual)
+        self.__add_info(new_individual)
         return new_individual
 
     def _replacement_mutation(self, individual) :
@@ -316,7 +320,7 @@ class GeneticBase(object) :
             primitive_obj = random.choice(self._primitive_storage)()
 
             # делаем так чтобы параметры примитива имели только одно значение
-            for name_variables in self._list_variables(primitive_obj) :
+            for name_variables in self.__list_variables(primitive_obj) :
                 setattr(primitive_obj, name_variables, random_value_from(primitive_obj, name_variables))
 
             # заменяем нужную трансформацию на новый примитив
@@ -396,7 +400,7 @@ class GeneticBase(object) :
             primitive_obj = random.choice(self._primitive_storage)()
 
             # делаем так чтобы параметры примитива имели только одно значение
-            for name_variables in self._list_variables(primitive_obj) :
+            for name_variables in self.__list_variables(primitive_obj) :
                 setattr(primitive_obj, name_variables, random_value_from(primitive_obj, name_variables))
 
             ind_copy.insert(len(ind_copy) - 1, (len(ind_copy), primitive_obj))  # добавляем в индивид новый примитив
@@ -473,7 +477,7 @@ class GeneticBase(object) :
 
         # добавляение информации об индивидах
         for ind in self.population :
-            self.add_info(ind)
+            self.__add_info(ind)
         print(f"Поколение 0 ",'!' * 100)
 
         pipeline_list_population = self._toolbox.compile(self.population)

@@ -130,6 +130,10 @@ class GeneticBase(object) :
         individual.info = tuple(names)
 
     def _creation_expression(self) :
+        """
+        Данная функция создает пайплайн из примитивов и терминалов
+        :return: пайплайн
+        """
         expression_added = False
         while not expression_added :
             expression = []
@@ -138,11 +142,11 @@ class GeneticBase(object) :
                 primitive_obj = random.choice(self._primitive_storage)()
                 for name_variables in self.__list_variables(primitive_obj) :
                     if name_variables == 'estimator' :
-                        # print(primitive_obj.estimator)
                         name_estimator = random.choice(list(primitive_obj.estimator.keys()))
                         args_estimator = primitive_obj.estimator[name_estimator]
                         args_estimator['name_transform'] = name_estimator
                         obj_transform = type(name_estimator, (), args_estimator)()
+                        print(obj_transform)
                         for name_variables_estimator in self.__list_variables(obj_transform) :
                             setattr(obj_transform, name_variables_estimator,
                                     random_value_from(obj_transform, name_variables_estimator))
@@ -321,7 +325,17 @@ class GeneticBase(object) :
 
             # делаем так чтобы параметры примитива имели только одно значение
             for name_variables in self.__list_variables(primitive_obj) :
-                setattr(primitive_obj, name_variables, random_value_from(primitive_obj, name_variables))
+                if name_variables == 'estimator' :
+                    name_estimator = random.choice(list(primitive_obj.estimator.keys()))
+                    args_estimator = primitive_obj.estimator[name_estimator]
+                    args_estimator['name_transform'] = name_estimator
+                    obj_transform = type(name_estimator, (), args_estimator)()
+                    for name_variables_estimator in self.__list_variables(obj_transform) :
+                        setattr(obj_transform, name_variables_estimator,
+                                random_value_from(obj_transform, name_variables_estimator))
+                    setattr(primitive_obj, name_variables, self._transform_to_sklearn(obj_transform))
+                else :
+                    setattr(primitive_obj, name_variables, random_value_from(primitive_obj, name_variables))
 
             # заменяем нужную трансформацию на новый примитив
             ind_copy[random_transform[0] - 1] = (random_transform[0], primitive_obj)
@@ -401,7 +415,18 @@ class GeneticBase(object) :
 
             # делаем так чтобы параметры примитива имели только одно значение
             for name_variables in self.__list_variables(primitive_obj) :
-                setattr(primitive_obj, name_variables, random_value_from(primitive_obj, name_variables))
+                if name_variables == 'estimator' :
+                    name_estimator = random.choice(list(primitive_obj.estimator.keys()))
+                    args_estimator = primitive_obj.estimator[name_estimator]
+                    args_estimator['name_transform'] = name_estimator
+                    obj_transform = type(name_estimator, (), args_estimator)()
+                    print(obj_transform)
+                    for name_variables_estimator in self.__list_variables(obj_transform) :
+                        setattr(obj_transform, name_variables_estimator,
+                                random_value_from(obj_transform, name_variables_estimator))
+                    setattr(primitive_obj, name_variables, self._transform_to_sklearn(obj_transform))
+                else :
+                    setattr(primitive_obj, name_variables, random_value_from(primitive_obj, name_variables))
 
             ind_copy.insert(len(ind_copy) - 1, (len(ind_copy), primitive_obj))  # добавляем в индивид новый примитив
             ind_copy[-1] = (ind_copy[-1][0] + 1, ind_copy[-1][1])  # увеличиваем номер последний трансформации
@@ -608,14 +633,13 @@ if __name__ == '__main__':
 
     information_work = [[], []]
     df = pd.read_csv('../datasets/'+name)
-    # df = df.drop(df.index[1000 :])
+    df = df.drop(df.index[1000 :])
     df = df.drop(df.columns[-1],1)
     pp = preprocessing.PreProcessing(df, -1)
     pp.processing_missing_values()
     df = pp.get_dataframe()
     print(df)
-    x_train, x_test, y_train, y_test = train_test_split(df.drop(df.columns[-1], 1), df[df.columns[-1]], test_size=.2,
-                                                        random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(df.drop(df.columns[-1], 1), df[df.columns[-1]], test_size=.2)
     print(df)
     # GB = GeneticClustering(population_size=30, n_generations=5, name=name)
     # GB.cv = 3

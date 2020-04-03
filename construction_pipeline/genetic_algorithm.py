@@ -7,7 +7,8 @@ from copy import deepcopy
 from sklearn.model_selection import GridSearchCV
 import numpy as np
 from sklearn.pipeline import make_pipeline
-from construction_pipeline.models import preprocessing_models, selection_models, classification_models, regression_models, clustering_models
+from construction_pipeline.models import preprocessing_models, selection_models, classification_models,\
+    regression_models, clustering_models
 from time import time
 import pandas as pd
 from sklearn import preprocessing
@@ -20,13 +21,13 @@ import warnings
 from sklearn.metrics import accuracy_score
 from datetime import datetime
 from func_timeout import func_timeout, FunctionTimedOut
+from preprocessing_data import preprocessing
 
 CALLABLES = (types.FunctionType, types.MethodType)
 
 
-def cv_silhouette_scorer(estimator, X) :
-    # estimator.fit(X)
-    return sklearn.metrics.silhouette_score(X, estimator.fit_predict(X))
+def cv_silhouette_scorer(estimator, features) :
+    return sklearn.metrics.silhouette_score(features, estimator.fit_predict(features))
 
 
 def random_value_from(obj, name) :
@@ -40,6 +41,7 @@ class GeneticBase(object) :
     def __init__(self, type_explore, cv_func, score_func, n_generations, population_size, offspring_size, max_height,
                  min_height,
                  probability_mutation, probability_mate) :
+        # параметры конструктора
         self.type_explore = type_explore
         self.n_generations = n_generations
         self.population_size = population_size
@@ -48,39 +50,46 @@ class GeneticBase(object) :
         self.min_height = min_height
         self.probability_mutation = probability_mutation
         self.probability_mate = probability_mate
-        self._control_population = []
-        self._primitive_storage = None
-        self._terminal_storage = None
-        self.cv = 5
-        self.time_table = []
-        self.time_list = [0]
-        self.cv_func = cv_func
-        self.score_func = score_func
         if self.type_explore == 'classification' :
             self.terminal_models = classification_models
         elif self.type_explore == 'regression' :
             self.terminal_models = regression_models
         else :
             self.terminal_models = clustering_models
+        self.cv = 5  # количество кросс-валидаций
+        self.time_list = [0]  # список для хранения времени оценки каждого пайплайна
+        self.cv_func = cv_func  # функция кросс-валидации
+        self.score_func = score_func  # функция финальной оценки
+
+        # служебные хранилища
+        self._control_population = []  # для контроля однотипных пайплайнов
+        self._primitive_storage = None  # список классов примитивов
+        self._terminal_storage = None  # список классов терминалов
 
     def _create_primitives_and_terminals_storage(self) :
-        if self._primitive_storage is None :
+        """
+        Данная функция превращает словари в файле models.py в классы библиотеки sklearn
+        *primitive - это модели, которые не должны находится в конце пайплайна (обычно они выполняют
+         какую-то предобработку данных)
+        *terminals - это модели, которые могут находится в конце пайплайна, то есть обучающие модели
+        **Создание классов происходит динамически
+        """
+        if self._primitive_storage is None :  # если список классов примитивов ещё не создан
             self._primitive_storage = []
             for name_transform, args_transform in preprocessing_models.items() :
-                args_transform = deepcopy(args_transform)
+                args_transform = deepcopy(args_transform)   # список возможных аргументов модели
                 args_transform['type_transform'] = 'preprocessing'
                 args_transform['name_transform'] = name_transform
                 self._primitive_storage.append(type(name_transform, (), args_transform))
             for name_transform, args_transform in selection_models.items() :
-                args_transform = deepcopy(args_transform)
+                args_transform = deepcopy(args_transform)   # список возможных аргументов модели
                 args_transform['type_transform'] = 'selection'
                 args_transform['name_transform'] = name_transform
                 self._primitive_storage.append(type(name_transform, (), args_transform))
-        if self._terminal_storage is None :
+        if self._terminal_storage is None :  # если список классов терминалов ещё не создан
             self._terminal_storage = []
-            # if self.type_explore == 'classification':
             for name_transform, args_transform in self.terminal_models.items() :
-                args_transform = deepcopy(args_transform)
+                args_transform = deepcopy(args_transform)   # список возможных аргументов модели
                 args_transform['type_transform'] = self.type_explore
                 args_transform['name_transform'] = name_transform
                 self._terminal_storage.append(type(name_transform, (), args_transform))
@@ -154,8 +163,14 @@ class GeneticBase(object) :
             with warnings.catch_warnings() :
                 # warnings.simplefilter('ignore')
                 try :
-                    avg_time = np.array(self.time_list).mean()
-                    stop_time = avg_time if avg_time > 10 else 10
+                    avg_time = np.array(self.time_list).mean()*self.cv
+                    if len(self.time_list) > self.population_size*0.10:
+                        if avg_time < 1:
+                            avg_time = 1
+                        stop_time = avg_time *10
+                    else:
+                        stop_time = 600
+                    # stop_time = avg_time*10 if len(self.time_list) > self.population_size*0.10 else 600
                     # start = time()
                     # @func_set_timeout(stop_time)
                     try :
@@ -189,7 +204,7 @@ class GeneticBase(object) :
                 finally :
                     # print(cross_val_pipeline['test_score'].mean(), type(cross_val_pipeline['test_score'].mean()))
                     # print( cross_val_pipeline['test_score'].mean() is np.float64('nan'))
-                    print(number_pipeline, score)
+                    print(number_pipeline, score, time)
                     population[number_pipeline].fitness.values = (len(population[number_pipeline]), score)
                     # print(population[number_pipeline].fitness.value)
                     population[number_pipeline].time = time
@@ -585,18 +600,23 @@ class GeneticClustering(GeneticBase) :
 
 
 if __name__ == '__main__':
-    name = 'sonar.csv'
+    name = 'housing.csv'
+
     information_work = [[], []]
     df = pd.read_csv('../datasets/'+name)
-    # df = df.drop(df.index[150 :])
-    # df = df.drop(df.columns[0],1)
+    # df = df.drop(df.index[1000 :])
+    df = df.drop(df.columns[-1],1)
+    pp = preprocessing.PreProcessing(df, -1)
+    pp.processing_missing_values()
+    df = pp.get_dataframe()
+    print(df)
     x_train, x_test, y_train, y_test = train_test_split(df.drop(df.columns[-1], 1), df[df.columns[-1]], test_size=.2,
                                                         random_state=42)
     print(df)
     # GB = GeneticClustering(population_size=30, n_generations=5, name=name)
     # GB.cv = 3
     s = time()
-    GB = GeneticClassification(population_size=30, n_generations=5, name=name)
+    GB = GeneticRegression(population_size=30, n_generations=5, name=name)
     GB.cv = 3
     GB.fit(x_train,y_train)
     GB.score(x_test,y_test,time()-s,information_work)

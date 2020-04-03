@@ -266,6 +266,9 @@ class PreProcessing:
         self.one_hot_check()
         return self.np_dataset
 
+    def get_dataframe(self):
+        print(self.np_dataset.shape,self.target.shape)
+        return pd.DataFrame(np.concatenate((self.np_dataset, self.target[:,None]),axis=1))
 
 if __name__ == '__main__' :
     # a = np.random.rand(100).reshape(10, 10)*100

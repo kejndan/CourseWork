@@ -492,7 +492,8 @@ class GeneticBase(object) :
         return True
 
     def fit(self, features, targets=[]) :
-
+        if self.type_explore == 'regression':
+            targets = np.array(targets, dtype=np.float)
         # инициализация
         self._create_primitives_and_terminals_storage()
         self._setup_toolbox()
@@ -511,7 +512,7 @@ class GeneticBase(object) :
         self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
         print('Оценка окончена. Время оценки ', time() - s)
         for number_generation in range(self.n_generations) :
-            # print('Поколение ', number_generation, ' ', '!' * 100)
+            print('Поколение ', number_generation, ' ', '!' * 100)
             # pipeline_list_population = self._toolbox.compile(self.population)
             # print('Началось оценка популяции')
             # s = time()

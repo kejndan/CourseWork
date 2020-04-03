@@ -459,14 +459,20 @@ class GeneticBase(object) :
         # добавляение информации об индивидах
         for ind in self.population :
             self.add_info(ind)
+        print(f"Поколение 0 ",'!' * 100)
 
+        pipeline_list_population = self._toolbox.compile(self.population)
+        print('Началось оценка популяции')
+        s = time()
+        self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
+        print('Оценка окончена. Время оценки ', time() - s)
         for number_generation in range(self.n_generations) :
-            print('Поколение ', number_generation, ' ', '!' * 100)
-            pipeline_list_population = self._toolbox.compile(self.population)
-            print('Началось оценка популяции')
-            s = time()
-            self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
-            print('Оценка окончена. Время оценки ', time() - s)
+            # print('Поколение ', number_generation, ' ', '!' * 100)
+            # pipeline_list_population = self._toolbox.compile(self.population)
+            # print('Началось оценка популяции')
+            # s = time()
+            # self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
+            # print('Оценка окончена. Время оценки ', time() - s)
             print('Началось создание потомков')
             s = time()
             offspring = self._create_offspring(self.population, features, targets, time_info=False)
@@ -480,49 +486,66 @@ class GeneticBase(object) :
 
         return self.population[0], self.individual_to_sklearn(self.population[0])
 
-    def score(self, features_test, targets_test, time_work) :
+    def score(self, features_test, targets_test, time_work,output_inform) :
         pipeline_list_population = self._toolbox.compile(self.population)
         # print(pipeline_list_population)
         learned_pipelines = []
         # print(pipeline_list_population)
+
+        x_valid, x_test, y_valid, y_test = train_test_split(features_test, targets_test, test_size=.5,
+                                                            random_state=42)
         for index, pipeline in enumerate(pipeline_list_population) :
             try :
-                pipeline[1].fit(self.features_train, self.targets_train)
-                learned_pipelines.append((index, pipeline[1].score(features_test, targets_test)))
+
+                if self.type_explore == 'clustering' :
+                    # pipeline[1].fit(self.features_train)
+                    learned_pipelines.append(
+                        (index, -sklearn.metrics.davies_bouldin_score(x_valid, pipeline[1].fit_predict(x_valid))))
+                elif self.type_explore == 'regression' :
+                    pipeline[1].fit(self.features_train, self.targets_train)
+                    learned_pipelines.append((index, -self.score_func(y_valid, pipeline[1].predict(x_valid))))
+                elif self.type_explore == 'classification' :
+                    pipeline[1].fit(self.features_train, self.targets_train)
+                    learned_pipelines.append((index, self.score_func(y_valid, pipeline[1].predict(x_valid))))
             except :
                 pass
-        fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train)
-        print(self.features_train)
+        learned_pipelines = sorted(learned_pipelines, key=lambda x : x[1], reverse=True)
+
         if self.type_explore == 'regression' :
-            err = self.score_func(targets_test, fitted_pipeline.predict(features_test)) ** (1 / 2)
+            fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train,
+                                                                                       self.targets_train)
+            err = self.score_func(y_test, fitted_pipeline.predict(x_test)) ** (1 / 2)
         elif self.type_explore == 'clustering' :
-            print(fitted_pipeline)
-            print(fitted_pipeline.transform(self.features_train))
-            err = sklearn.metrics.silhouette_score(self.features_train,
-                                                   fitted_pipeline.predict(self.features_train))
+            # fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train)
+            err = sklearn.metrics.davies_bouldin_score(x_test, pipeline[1].fit_predict(x_test))
         else :
-            err = self.score_func(targets_test, fitted_pipeline.predict(features_test))
+            fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train,
+                                                                                       self.targets_train)
+            err = self.score_func(y_test, fitted_pipeline.predict(x_test))
 
         print('Error', err)
-        learned_pipelines = sorted(learned_pipelines, key=lambda x : x[1], reverse=True)
+        output_inform[0].append(err)
+        output_inform[1].append(time_work)
         # print(learned_pipelines)
         for ind in self.population[learned_pipelines[0][0]] :
             print(ind[1].name_transform, ind[1].__dict__)
+
         self.export_information(learned_pipelines, err, time_work)
         for i, p in enumerate(self.population) :
             print(i, p, p.fitness.values)
         for i in learned_pipelines :
             print(i)
 
+
     def export_information(self, learned_pipelines, error, time_work) :
-        with open(self.name + str(datetime.today())[1 :] + '.txt', 'a') as f :
-            for ind in self.population[learned_pipelines[0][0]] :
-                f.write(str(ind[1].name_transform) + '\n')
-                for key, val in ind[1].__dict__.items() :
-                    f.write(key + ' ' + str(val) + '\n')
-        print(self.name[:self.name.rfind('.')] + '_stats.txt')
-        with open(self.name[:self.name.rfind('.')] + '_stats.txt', 'a') as f :
-            f.write('MyAlg ' + str(error) + ' ' + str(time_work) + '\n')
+            with open(self.name + '.txt', 'a') as f :
+                for ind in self.population[learned_pipelines[0][0]] :
+                    f.write(str(ind[1].name_transform) + '\n')
+                    for key, val in ind[1].__dict__.items() :
+                        f.write(key + ' ' + str(val) + '\n')
+            print(self.name[:self.name.rfind('.')] + '_stats.txt')
+            with open(self.name[:self.name.rfind('.')] + '_stats.txt', 'a') as f :
+                f.write('MyAlg ' + str(error) + ' ' + str(time_work) + '\n')
 
 
 class GeneticClassification(GeneticBase) :
@@ -563,6 +586,7 @@ class GeneticClustering(GeneticBase) :
 
 if __name__ == '__main__':
     name = 'sonar.csv'
+    information_work = [[], []]
     df = pd.read_csv('../datasets/'+name)
     # df = df.drop(df.index[150 :])
     # df = df.drop(df.columns[0],1)
@@ -572,11 +596,12 @@ if __name__ == '__main__':
     # GB = GeneticClustering(population_size=30, n_generations=5, name=name)
     # GB.cv = 3
     s = time()
-    GB = GeneticClustering(population_size=30, n_generations=2, name=name)
+    GB = GeneticClassification(population_size=30, n_generations=5, name=name)
     GB.cv = 3
     GB.fit(x_train,y_train)
-    GB.score(x_test,y_test,time()-s)
+    GB.score(x_test,y_test,time()-s,information_work)
     print(time()-s)
+    print(information_work)
     # print(p)
     #
     # y = GB.population

@@ -7,7 +7,7 @@ from preprocessing_data.log_transformation import to_log, to_box_cox
 from preprocessing_data import scaling
 
 
-class PreProcessing :
+class PreProcessing:
     """
     Данный класс используется для предобработки датасета:
     *обработка пропущенных значений
@@ -33,10 +33,17 @@ class PreProcessing :
         """
         Данный функция обрабатывает пропущенные значения
         Способы обработки:
-        *auto -
+        *auto - если количество пропущенных значений больше 80%, то признак удаляется, иначе заменяем
+            пропущенные значения на средние арифметическое, а если это столбец с категориями, то замена на
+            часто встречаемое значение
+        *mean - заменяем пропущенные значения на средние арифметическое
+        *median - заменяем пропущенные значения на медиану
+        *most_frequent - заменяем пропущенные значения на часто встречаемые
+        *del - удаление объекта с пропущенным значением
+            #TODO сделать не только для NaN
         :param to: способ обработки
         :param features: индексы признаков которые надо обработать
-        :return:
+        :return: обработанный X
         """
         base_null = ['null', 'NULL', 'NaN', 'nan', '-', '?']
         if features is None :
@@ -46,20 +53,25 @@ class PreProcessing :
             for feature in features :
                 index_missing_values = []
                 index_filled_values = []
+                this_column_categorical = False
                 for sample in range(len(self.np_dataset)) :
-                    print(self.np_dataset[sample, feature], self.np_dataset[sample, feature] in base_null)
-                    if self.np_dataset[sample, feature] not in base_null \
-                            and type(self.np_dataset[sample, feature]) == str:
-                        pass
-                    elif self.np_dataset[sample, feature] in base_null or np.isnan(self.np_dataset[sample, feature]):
-                        index_missing_values.append(sample)
+                    if self.np_dataset[sample, feature] in base_null \
+                            or type(self.np_dataset[sample, feature]) != str :
+                        if self.np_dataset[sample, feature] in base_null or np.isnan(self.np_dataset[sample, feature]) :
+                            index_missing_values.append(sample)
+                        else :
+                            index_filled_values.append(sample)
                     else:
+                        this_column_categorical = True
                         index_filled_values.append(sample)
-                if 1 - len(index_missing_values) / len(self.np_dataset) > 0.2:
-                    if len(index_filled_values) != 0:
-                        mean = self.np_dataset[np.array(index_filled_values), feature].mean()
+                if 1 - len(index_missing_values) / len(self.np_dataset) > 0.2 :
+                    if len(index_filled_values) != 0 :
+                        if this_column_categorical:
+                            value = mode(self.np_dataset[np.array(index_filled_values), feature])[0][0]
+                        else:
+                            value = self.np_dataset[np.array(index_filled_values), feature].mean()
                     if len(np.array(index_missing_values)) != 0 :
-                        self.np_dataset[np.array(index_missing_values), feature] = mean
+                        self.np_dataset[np.array(index_missing_values), feature] = value
                     index_no_del_features.append(feature)
             self.np_dataset = self.np_dataset[:, index_no_del_features]
         elif to == 'mean' or to == 'median' or to == 'most_frequent' :
@@ -67,7 +79,6 @@ class PreProcessing :
                 index_missing_values = []
                 index_filled_values = []
                 for sample in range(len(self.np_dataset)) :
-                    print(self.np_dataset[sample, feature])
                     if self.np_dataset[sample, feature] in base_null or np.isnan(self.np_dataset[sample, feature]) :
                         index_missing_values.append(sample)
                     else :
@@ -84,11 +95,25 @@ class PreProcessing :
         else :
             full_dataset = np.concatenate((self.np_dataset, self.target[:, None]), axis=1)
             full_dataset_without_nan = np.array(pd.DataFrame(full_dataset).dropna())
+            # full_dataset_without_nan = np.where(full_dataset_without_nan not in base_null)
             self.np_dataset = full_dataset_without_nan[:, :-1]
             self.target = full_dataset_without_nan[:, -1 :]
         return self.np_dataset
 
     def handling_outliners(self, method=None, factor=3, features=None) :
+        """
+        Данная функция обрабатывает выбросы
+        Способы обработки:
+        *std - удаление объекта, если его признак выходит за рамки +-(feature.all()).std()*factor
+        *percentile - удаление объекта, если его признак меньше процентиля 0.05 или больше процентиля 0.95
+        *None - заменяет признак объекта на процентиль 0.95, если он его больше, или заменяет на процентиль
+            0.05, если он его меньше
+        :param method: метод обработки
+        :param factor: коэфициент смещения стандратного отклонения
+        :param features: индексы признаков которые надо обработать
+        :return: обработанный X
+        """
+
         if features is None :
             features = range(len(self.np_dataset[0]))
         for feature in features :
@@ -108,6 +133,17 @@ class PreProcessing :
         return self.np_dataset
 
     def binning(self, n_bins, type_binning='equal', features=None) :
+        """
+        Данная функция проводит категоризацию значений признака
+        Способы категоризации:
+        *equal - разделение на одинаковые категории по размерам
+        *entropy - разделение на категории с максимальной информативностью по отношению к Y
+        *quantile - разделение на категории с помощью кватилий
+        :param n_bins: насколько категорий разделить
+        :param type_binning: способ категоризации
+        :param features: индексы признаков которые надо обработать
+        :return: обработанный X
+        """
         if features is None :
             features = range(len(self.np_dataset[0]))
         for feature in features :
@@ -124,6 +160,16 @@ class PreProcessing :
             return self.np_dataset
 
     def transform(self, type_transform='log', arg=10, features=None) :
+        """
+        Данная функция проводит трансформацию признака с помощью определнных функций
+        Способы трансформации:
+        *log - логарифмирует признак
+        *box-cox - трансформирует признак методом Бокса-Кокса
+        :param type_transform: способ трансофрмации
+        :param arg: основание логарифма для способа log или лямбда для способа box-cox
+        :param features: индексы признаков которые надо обработать
+        :return: обработанный X
+        """
         if features is None :
             features = range(len(self.np_dataset[0]))
         for feature in features :
@@ -131,10 +177,20 @@ class PreProcessing :
                 if type_transform == 'log' :
                     self.np_dataset[:, feature] = to_log(self.np_dataset[:, feature], arg)
                 elif type_transform == 'box-cox' :
-                    self.np_dataset[:, feature] = to_box_cox(self.np_dataset[:, feature])
+                    self.np_dataset[:, feature] = to_box_cox(self.np_dataset[:, feature], arg)
             return self.np_dataset
 
     def scaling(self, type_scale='norm', features=None) :
+        """
+        Данная функция уменьшает значения признаков
+        Способы уменьшения:
+        *norm - нормализирует значения признаков
+        *stand - стандартизирует значения признаков
+        *l2-norm - делит значения признака на норму этого признака
+        :param type_scale: способ уменьшения
+        :param features: индексы признаков которые надо обработать
+        :return: обработанный X
+        """
         if features is None :
             features = range(len(self.np_dataset[0]))
         for feature in features :
@@ -147,7 +203,27 @@ class PreProcessing :
                     self.np_dataset[:, feature] = scaling.l2_normalized(self.np_dataset[:, feature])
             return self.np_dataset
 
+    def one_hot_check(self):
+        """
+        Данная функция проверяет признака на то, чтобы они не были категориальными
+        :return: индексы признаков с категориями
+        """
+        self.one_hot_features = []
+        for index in range(len(self.np_dataset[0, :])) :
+            if type(self.np_dataset[:, index]) == str :
+                self.one_hot_features.append(index)
+        return self.one_hot_features
+
     def preprocessing_manager(self, kwargs) :
+        """
+        Данная функция вызывает те функции данного класса, которые были заданны в словаре kwargs.
+        В конце проверяет на то, какие признаки имеют категории и записывает их индексы
+            в self.one_hot_features
+        Формат задачи kwargs:
+        {'func1':{'arg1_1':value,'arg1_2':value,...}, 'func2':{'arg2_1':value,'arg2_2':value,...},...}
+        :param kwargs: словарь вызываемых функций
+        :return: обработанный X
+        """
         if 'processing_missing_values' in kwargs :
             if 'to' not in kwargs['processing_missing_values'] :
                 kwargs['processing_missing_values']['to'] = 'auto'
@@ -187,10 +263,7 @@ class PreProcessing :
             if 'features' not in kwargs['scaling'] :
                 kwargs['scaling']['features'] = None
             self.scaling(kwargs['scaling']['type_scale'], kwargs['scaling']['features'])
-        self.one_hot_features = []
-        for index in range(len(self.np_dataset[0, :])) :
-            if type(self.np_dataset[:, index]) == str :
-                self.one_hot_features.append(index)
+        self.one_hot_check()
         return self.np_dataset
 
 
@@ -203,10 +276,10 @@ if __name__ == '__main__' :
     # q = pp.binning(3, features=[0])
     # print(q)
     # df = pd.read_csv('../datasets/housing.csv')
-    a = np.array([['?', 2, 'o', 1], [3, 4, 'p', 0], [np.nan, 0, 'q', 0], [4, 100, 'f', 1]], dtype=np.object)
+    a = np.array([['?', 2, 'o', 1], [3, 4, 'p', 0], [np.nan, 0, np.nan, 0], [4, 100, '?', 1]], dtype=np.object)
     pp = PreProcessing(a, -1)
     print(pp.np_dataset)
-    rules = {'processing_missing_values' : {'to' : 'auto'}, 'handling_outliners' : {'method' : None, 'features' : [1]},
+    rules = {'processing_missing_values' : {'to' : 'del'}, 'handling_outliners' : {'method' : None, 'features' : [1]},
              'binning' : {'n_bins' : 3, 'features' : [1]}, 'transform' : {}}
     pp.preprocessing_manager(rules)
     print(pp.np_dataset)

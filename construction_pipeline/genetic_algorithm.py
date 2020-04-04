@@ -271,17 +271,25 @@ class GeneticBase(object) :
             return eval(transform.name_transform + '()')
 
     def _mate_operator(self, individual_1, individual_2, features, targets, use_grid_search=False) :
+        """
+        Данная функция скрещевает два индивида
+        :param individual_1: переданный первый индивид
+        :param individual_2: переданный второй индивид
+        :param features: X датасета
+        :param targets: Y датасета
+        :param use_grid_search: использовать grid_search для подбора оптимальных параметров при скрещивание
+        :return: новый индивид порожденный скрщевинием ind_1 и ind_2
+        """
+        # поиск общих моделей в пайплайне
         common_transforms = []
         for transform_individual_1 in individual_1 :
             for transform_individual_2 in individual_2 :
                 if isinstance(transform_individual_1[1], type(transform_individual_2[1])) :
                     common_transforms.append((transform_individual_1, transform_individual_2))
-        transform = random.choice(common_transforms)
-        if transform[0][1].type_transform != self.type_explore or not use_grid_search :
-            param = random.choice(list(transform[0][1].__dict__.keys()))
-            new_individual = deepcopy(individual_1)
-            setattr(new_individual[transform[0][0] - 1][1], param, getattr(individual_2[transform[1][0] - 1][1], param))
-            return new_individual
+
+        transform = random.choice(common_transforms)  # случайный выбор общий модели
+        # TODO if transform[0][1].type_transform != self.type_explore or not use_grid_search :
+        # подготовка сетки параметров на тот случай если grid_search включен
         param_transform_1 = transform[0][1].__dict__
         param_transform_2 = transform[1][1].__dict__
         param_grid = {}
@@ -291,9 +299,14 @@ class GeneticBase(object) :
             else :
                 param_grid[name_param] = [param_transform_1[name_param], param_transform_2[name_param]]
         param_grid = deepcopy(param_grid)
-        if len(param_grid) == 2 :
-            return individual_1
-        else :
+
+        # если grid_search выключен или параметров(кроме служебных) для настройки нет, иначе запускаем grid_search
+        if not use_grid_search or len(param_grid) == 2:
+            param = random.choice(list(transform[0][1].__dict__.keys()))
+            new_individual = deepcopy(individual_1)
+            setattr(new_individual[transform[0][0] - 1][1], param, getattr(individual_2[transform[1][0] - 1][1], param))
+            return new_individual
+        else:
             param_grid.pop('type_transform')
             param_grid.pop('name_transform')
             gscv = GridSearchCV(self._transform_to_sklearn(transform[0][1], False), param_grid, cv=3,

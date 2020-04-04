@@ -62,6 +62,8 @@ class GeneticBase(object) :
         self.score_func = score_func  # функция финальной оценки
 
         # служебные хранилища
+        self.population = None
+
         self._control_population = []  # для контроля однотипных пайплайнов
         self._primitive_storage = None  # список классов примитивов
         self._terminal_storage = None  # список классов терминалов
@@ -118,6 +120,20 @@ class GeneticBase(object) :
         :return: список переменных объекта
         """
         return [i for i in dir(obj) if not i.startswith('__') and not isinstance(getattr(obj, i), CALLABLES)]
+
+    def _compare_inds(self, individual_1, individual_2) :
+        """
+        Данная функция проверяет индивиды совпадение всех трансформаций.
+        :param individual_1: первый переданный индивид
+        :param individual_2: второй переданный индивид
+        :return: True - если индивиды совпадают, False - если нет.
+        """
+        if len(individual_1) != len(individual_2) :
+            return False
+        for i in range(len(individual_1)) :
+            if not isinstance(individual_1[i][1], type(individual_2[i][1])) :
+                return False
+        return True
 
     def __add_info(self, individual) :
         """
@@ -413,10 +429,9 @@ class GeneticBase(object) :
         """
         # TODO ? сделать замену на другой индивид если мутация не удалась
         ind_copy = deepcopy(individual)  # копируем индивид
-        if len(ind_copy) > 1 :
-            # если индивид имеет не только терминальную трансформацию
-
+        if len(ind_copy) > 1 : # если индивид имеет не только терминальную трансформацию
             del_transform = random.choice(ind_copy[:-1])  # случайным образом выбираем удаляемый примитив
+
             # меняем в индивиде номера трансформаций
             for number in range(del_transform[0], len(ind_copy)) :
                 ind_copy[number] = (ind_copy[number][0] - 1, ind_copy[number][1])
@@ -432,16 +447,12 @@ class GeneticBase(object) :
         """
         # TODO ? сделать замену на другой индивид если мутация не удалась
         # TODO случайным образом вставлять новый примитив, а не в конец
-        # TODO вынести инициализацию нового в примитива в отдельную функцию
-
         ind_copy = deepcopy(individual)  # копируем индивид
 
-        if len(ind_copy) < self.max_height :
-            # если количество трансформаций в индивиде не превышает допустимый порог
+        if len(ind_copy) < self.max_height : # если количество трансформаций в индивиде не превышает допустимый порог
 
             # выбираем случайный примитив из набора классов и создаем объект
             primitive_obj = random.choice(self._primitive_storage)()
-
             # делаем так чтобы параметры примитива имели только одно значение
             self.__processing_hyperparameters_primitive(primitive_obj)
 
@@ -449,10 +460,12 @@ class GeneticBase(object) :
             ind_copy[-1] = (ind_copy[-1][0] + 1, ind_copy[-1][1])  # увеличиваем номер последний трансформации
         return ind_copy
 
-    def _create_offspring(self, population, features, targets, time_info=True) :
+    def _create_offspring(self, population, features, targets, time_info=False) :
         """
-        Данная функция создает потомство.
+        Данная функция создает потомство на основании переданной популяции
         :param population: переданная популяция
+        :param features: X датасета
+        :param targets: Y датасета
         :return: потомство
         """
         # TODO перед скрещиванием проверить сразу на повторяемость
@@ -461,18 +474,18 @@ class GeneticBase(object) :
         if self.offspring_size is None :
             self.offspring_size = self.population_size
         time_table = []
-        i = 0
-        while i < self.offspring_size :
+        number = 0  # текущие количество потомков
+        while number < self.offspring_size :
             begin_change = time()
             if np.random.random() <= self.probability_mate :
-                type_change = 'mate'
                 # c вероятностью self.probability_mate скрещиваем два индивида
+                type_change = 'mate'
                 new_ind = self._toolbox.mate(*self._get_random_two_ind_for_mate(population), features, targets, False)
             elif np.random.random() <= self.probability_mate + self.probability_mutation :
-                type_change = 'mutate'
                 # c вероятностью self.probability_mutation мутируем индвид
+                type_change = 'mutate'
                 new_ind = self._toolbox.mutation(random.choice(population_copy))
-            # считаем сколько раз подобный индивид повторяем в популяции и потомстве
+            # считаем сколько раз подобный индивид повторяется в популяции и потомстве
             stop_change = time() - begin_change
             begin_check = time()
             count = 1
@@ -485,30 +498,23 @@ class GeneticBase(object) :
             stop_check = time() - begin_check
             # проверка того чтобы количество новых потомков не превышало допустимую норму
             if count <= self.offspring_size * 0.1 or count <= 1 :
-                time_table.append([i, type_change, stop_change, stop_check])
+                time_table.append([number, type_change, stop_change, stop_check])
                 # если количество не превышает, то добавляем новый индивид в потомство
                 offspring.append(new_ind)
-                i += 1
+                number += 1
         if time_info :
             for num in time_table :
                 print(num)
         return offspring
 
-    def _compare_inds(self, individual_1, individual_2) :
+    def fit(self, features, targets=None) :
         """
-        Данная функция проверяет индивиды совпадение всех трансформаций.
-        :param individual_1: первый переданный индивид
-        :param individual_2: второй переданный индивид
-        :return: True - если индивиды совпадают, False - если нет.
+        :param features:
+        :param targets:
+        :return:
         """
-        if len(individual_1) != len(individual_2) :
-            return False
-        for i in range(len(individual_1)) :
-            if not isinstance(individual_1[i][1], type(individual_2[i][1])) :
-                return False
-        return True
-
-    def fit(self, features, targets=[]) :
+        if targets is None :
+            targets = []
         if self.type_explore == 'regression':
             targets = np.array(targets, dtype=np.float)
         elif self.type_explore == 'classification':
@@ -525,23 +531,17 @@ class GeneticBase(object) :
             self.__add_info(ind)
         print(f"Поколение 0 ",'!' * 100)
 
-        # pipeline_list_population = self._toolbox.compile(self.population)
         print('Началось оценка популяции')
         s = time()
         self._evaluation_individuals(self.population, features, targets)
         print('Оценка окончена. Время оценки ', time() - s)
         for number_generation in range(self.n_generations) :
-            print('Поколение ', number_generation, ' ', '!' * 100)
-            # pipeline_list_population = self._toolbox.compile(self.population)
-            # print('Началось оценка популяции')
-            # s = time()
-            # self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
-            # print('Оценка окончена. Время оценки ', time() - s)
+            if number_generation > 0:
+                print(f'Поколение {number_generation} ', '!' * 100)
             print('Началось создание потомков')
             s = time()
             offspring = self._create_offspring(self.population, features, targets, time_info=False)
             print('Потомки созданы. Время создания ', time() - s)
-            pipeline_list_offspring = self._toolbox.compile(offspring)
             print('Началось оценка популяции')
             s = time()
             self._evaluation_individuals(offspring, features, targets)
@@ -550,36 +550,41 @@ class GeneticBase(object) :
 
         return self.population[0], self.individual_to_sklearn(self.population[0])
 
-    def score(self, features_test, targets_test, time_work,output_inform) :
+    def score(self, features_test, targets_test, time_work,output_inform, cross_val=False) :
+        # смена типа данных для targets_test
         if self.type_explore == 'regression':
             targets_test = np.array(targets_test, dtype=np.float)
         elif self.type_explore == 'classification':
             targets_test = np.array(targets_test, dtype=np.int)
-        pipeline_list_population = self._toolbox.compile(self.population)
-        # print(pipeline_list_population)
-        learned_pipelines = []
-        # print(pipeline_list_population)
 
-        x_valid, x_test, y_valid, y_test = train_test_split(features_test, targets_test, test_size=.5,
-                                                            random_state=42)
+        # превращается популяцию из псевдо пайплайнов в sklearn пайплайны
+        pipeline_list_population = self._toolbox.compile(self.population)
+        learned_pipelines = []
+
+        x_valid, x_test, y_valid, y_test = train_test_split(features_test, targets_test, test_size=.5)
+        # валидация пайплайнов
         for index, pipeline in enumerate(pipeline_list_population) :
             try :
-
-                if self.type_explore == 'clustering' :
-                    # pipeline[1].fit(self.features_train)
-                    learned_pipelines.append(
-                        (index, -sklearn.metrics.davies_bouldin_score(x_valid, pipeline[1].fit_predict(x_valid))))
-                elif self.type_explore == 'regression' :
-                    pipeline[1].fit(self.features_train, self.targets_train)
-                    learned_pipelines.append((index, -self.score_func(y_valid, pipeline[1].predict(x_valid))))
-                elif self.type_explore == 'classification' :
-                    pipeline[1].fit(self.features_train, self.targets_train)
-                    learned_pipelines.append((index, self.score_func(y_valid, pipeline[1].predict(x_valid))))
+                if cross_val:
+                    score_valid = cross_validate(pipeline[1],x_valid, y_valid,cv=5, scoring=(self.cv_func,))
+                    ['test_'+self.cv_func].mean()
+                    learned_pipelines.append((index, score_valid))
+                else:
+                    if self.type_explore == 'clustering' :
+                        # pipeline[1].fit(self.features_train)
+                        learned_pipelines.append(
+                            (index, -sklearn.metrics.davies_bouldin_score(x_valid, pipeline[1].fit_predict(x_valid))))
+                    elif self.type_explore == 'regression' :
+                        pipeline[1].fit(self.features_train, self.targets_train)
+                        learned_pipelines.append((index, -self.score_func(y_valid, pipeline[1].predict(x_valid))))
+                    elif self.type_explore == 'classification' :
+                        pipeline[1].fit(self.features_train, self.targets_train)
+                        learned_pipelines.append((index, self.score_func(y_valid, pipeline[1].predict(x_valid))))
             except Exception as e:
                 print(e)
                 pass
+        # проверка лучшего пайплайна на тестовой выборке
         learned_pipelines = sorted(learned_pipelines, key=lambda x : x[1], reverse=True)
-
         if self.type_explore == 'regression' :
             fitted_pipeline = pipeline_list_population[learned_pipelines[0][0]][1].fit(self.features_train,
                                                                                        self.targets_train)
@@ -605,16 +610,15 @@ class GeneticBase(object) :
         for i in learned_pipelines :
             print(i)
 
-
     def export_information(self, learned_pipelines, error, time_work) :
-            with open(self.name + '.txt', 'a') as f :
-                for ind in self.population[learned_pipelines[0][0]] :
-                    f.write(str(ind[1].name_transform) + '\n')
-                    for key, val in ind[1].__dict__.items() :
-                        f.write(key + ' ' + str(val) + '\n')
-            print(self.name[:self.name.rfind('.')] + '_stats.txt')
-            with open(self.name[:self.name.rfind('.')] + '_stats.txt', 'a') as f :
-                f.write('MyAlg ' + str(error) + ' ' + str(time_work) + '\n')
+        with open(self.name + '.txt', 'a') as f :
+            for ind in self.population[learned_pipelines[0][0]] :
+                f.write(str(ind[1].name_transform) + '\n')
+                for key, val in ind[1].__dict__.items() :
+                    f.write(key + ' ' + str(val) + '\n')
+        print(self.name[:self.name.rfind('.')] + '_stats.txt')
+        with open(self.name[:self.name.rfind('.')] + '_stats.txt', 'a') as f :
+            f.write('MyAlg ' + str(error) + ' ' + str(time_work) + '\n')
 
 
 class GeneticClassification(GeneticBase) :
@@ -671,28 +675,9 @@ if __name__ == '__main__':
     s = time()
     GB = GeneticClassification(population_size=30, n_generations=5, name=name)
     GB.cv = 3
-    GB.fit(x_train,y_train)
-    GB.score(x_test,y_test,time()-s,information_work)
+    GB.fit(x_train, y_train)
+    GB.score(x_test, y_test, time()-s, information_work, cross_val=False)
     print(time()-s)
     print(information_work)
-    # print(p)
-    #
-    # y = GB.population
-    # # x_train, x_test, y_train, y_test = train_test_split(df.drop(df.columns[-1], 1), df[df.columns[-1]], test_size=.2,
-    # #                                                     random_state=42)
-    # # print(y[0].fitness)
-    # pipe = []
-    # for em in y :
-    #     pipe.append(GB.individual_to_sklearn(em))
-    # l_p = []
-    # for i, p in enumerate(pipe) :
-    #     try :
-    #         p.fit(x_train, y_train)
-    #         l_p.append((i, p.score(x_test, y_test)))
-    #     except :
-    #         pass
-    # k = sorted(l_p, key=lambda x : x[1], reverse=True)
-    # for i, p in enumerate(y) :
-    #     print(i, p, p.fitness.value)
-    # for trans in y[k[0][0]] :
-    #     print(trans[1], trans[1].__dict__)
+    print(np.array(information_work[0]))
+    print(np.array(information_work[1]))

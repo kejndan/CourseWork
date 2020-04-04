@@ -184,55 +184,54 @@ class GeneticBase(object) :
         self._control_population.append(expression)
         return expression
 
-    def _evaluation_individuals(self, population, pipeline_list, features, targets) :
+    def _evaluation_individuals(self, population, features, targets) :
+        """
+        Данная функция используется для оценки качества пайплайна (то есть его точности)
+        :param population: переданная популяция
+        :param features: X датасета
+        :param targets: Y датасета
+        :return:
+        """
+        pipeline_list = self._toolbox.compile(population)  # конвертация условного пайплайна в sklearn пайплайн
         for number_pipeline, pipeline in enumerate(pipeline_list) :
             with warnings.catch_warnings() :
-                # warnings.simplefilter('ignore')
+                # warnings.simplefilter('ignore')  # скрытие предупреждений
+                # подсчёт среднего времени кросс-валидации одного пайплайна
+                avg_time = np.array(self.time_list).mean()*self.cv
+                # установка максимального времени кросс-валидации одного пайплайна
+                if len(self.time_list) > self.population_size*0.10 :
+                    if avg_time < 1:
+                        avg_time = 1
+                    stop_time = avg_time * 10
+                else:
+                    stop_time = 600
+                # попытка выполнить кросс-валидацию с помощью функции func_timeout, которая выбросит ошибку в случае
+                # если время кросс-валидации превысит stop_time или если произойдет ошибка при исполнении, и в таком
+                # score получается равный минус бесконечности, а время плюс бесконечности
                 try :
-                    avg_time = np.array(self.time_list).mean()*self.cv
-                    if len(self.time_list) > self.population_size*0.10:
-                        if avg_time < 1:
-                            avg_time = 1
-                        stop_time = avg_time * 10
-                    else:
-                        stop_time = 600
-                    # stop_time = avg_time*10 if len(self.time_list) > self.population_size*0.10 else 600
-                    # start = time()
-                    # @func_set_timeout(stop_time)
-                    try :
-                        if self.type_explore == 'clustering' :
-                            # print(features)
-                            # print(self.cv_func)
-                            # cross_val_pipeline = cross_validate(pipeline[1],features, scoring=self.cv_func, cv=3)
-                            cross_val_pipeline = func_timeout(stop_time, cross_validate,
-                                                              kwargs={'estimator' : pipeline[1], 'X' : features,
-                                                                      'scoring' : self.cv_func, 'cv' : self.cv})
-                        else :
-                            # print(features)
-                            cross_val_pipeline = func_timeout(stop_time, cross_validate, args=(
-                            pipeline[1], features, targets, None, self.cv_func, self.cv))
+                    if self.type_explore == 'clustering' :
+                        # cross_val_pipeline = cross_validate(pipeline[1],features, scoring=self.cv_func, cv=3)
+                        cross_val_pipeline = func_timeout(stop_time, cross_validate,
+                                                          kwargs={'estimator' : pipeline[1], 'X' : features,
+                                                                  'scoring' : self.cv_func, 'cv' : self.cv})
+                    else :
+                        cross_val_pipeline = func_timeout(stop_time, cross_validate, args=(
+                        pipeline[1], features, targets, None, self.cv_func, self.cv))
 
-                        score = cross_val_pipeline['test_score'].mean()
-                        time = cross_val_pipeline['score_time'].mean()
-                        self.time_list.append(time)
-                    # cross_val_pipeline = cross_validate(pipeline[1], features, targets, cv=self.cv, scoring='accuracy')
-                    except FunctionTimedOut :
-                        score = -float('inf')
-                        time = float('inf')
-                    # else:
-                    #     score = cross_val_pipeline['test_score'].mean()
-                    #     time = cross_val_pipeline['score_time'].mean()
+                    score = cross_val_pipeline['test_score'].mean()
+                    time = cross_val_pipeline['score_time'].mean()
+                    self.time_list.append(time)
+                except FunctionTimedOut :
+                    score = -float('inf')
+                    time = float('inf')
 
                 except Exception as e :
-                    print(e)
+                    # print(e)
                     score = -float('inf')
                     time = float('inf')
                 finally :
-                    # print(cross_val_pipeline['test_score'].mean(), type(cross_val_pipeline['test_score'].mean()))
-                    # print( cross_val_pipeline['test_score'].mean() is np.float64('nan'))
                     print(number_pipeline, score, time)
                     population[number_pipeline].fitness.values = (len(population[number_pipeline]), score)
-                    # print(population[number_pipeline].fitness.value)
                     population[number_pipeline].time = time
 
     def _population_to_sklearn(self, population) :
@@ -489,6 +488,8 @@ class GeneticBase(object) :
     def fit(self, features, targets=[]) :
         if self.type_explore == 'regression':
             targets = np.array(targets, dtype=np.float)
+        elif self.type_explore == 'classification':
+            targets = np.array(targets, dtype=np.int)
         # инициализация
         self._create_primitives_and_terminals_storage()
         self._setup_toolbox()
@@ -501,10 +502,10 @@ class GeneticBase(object) :
             self.__add_info(ind)
         print(f"Поколение 0 ",'!' * 100)
 
-        pipeline_list_population = self._toolbox.compile(self.population)
+        # pipeline_list_population = self._toolbox.compile(self.population)
         print('Началось оценка популяции')
         s = time()
-        self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
+        self._evaluation_individuals(self.population, features, targets)
         print('Оценка окончена. Время оценки ', time() - s)
         for number_generation in range(self.n_generations) :
             print('Поколение ', number_generation, ' ', '!' * 100)
@@ -520,13 +521,17 @@ class GeneticBase(object) :
             pipeline_list_offspring = self._toolbox.compile(offspring)
             print('Началось оценка популяции')
             s = time()
-            self._evaluation_individuals(offspring, pipeline_list_offspring, features, targets)
+            self._evaluation_individuals(offspring, features, targets)
             print('Оценка окончена. Время оценки ', time() - s)
             self.population[:] = self._toolbox.select(self.population + offspring, self.population_size)
 
         return self.population[0], self.individual_to_sklearn(self.population[0])
 
     def score(self, features_test, targets_test, time_work,output_inform) :
+        if self.type_explore == 'regression':
+            targets_test = np.array(targets_test, dtype=np.float)
+        elif self.type_explore == 'classification':
+            targets_test = np.array(targets_test, dtype=np.int)
         pipeline_list_population = self._toolbox.compile(self.population)
         # print(pipeline_list_population)
         learned_pipelines = []
@@ -547,7 +552,8 @@ class GeneticBase(object) :
                 elif self.type_explore == 'classification' :
                     pipeline[1].fit(self.features_train, self.targets_train)
                     learned_pipelines.append((index, self.score_func(y_valid, pipeline[1].predict(x_valid))))
-            except :
+            except Exception as e:
+                print(e)
                 pass
         learned_pipelines = sorted(learned_pipelines, key=lambda x : x[1], reverse=True)
 
@@ -625,12 +631,12 @@ class GeneticClustering(GeneticBase) :
 
 
 if __name__ == '__main__':
-    name = 'Fish.csv'
+    name = 'sonar.csv'
 
     information_work = [[], []]
     df = pd.read_csv('../datasets/'+name)
     # df = df.drop(df.index[1000 :])
-    df = df.drop(df.columns[0],1)
+    # df = df.drop(df.columns[0],1)
     pp = preprocessing.PreProcessing(df, -1)
     pp.processing_missing_values()
     df = pp.get_dataframe()
@@ -640,7 +646,7 @@ if __name__ == '__main__':
     # GB = GeneticClustering(population_size=30, n_generations=5, name=name)
     # GB.cv = 3
     s = time()
-    GB = GeneticRegression(population_size=100, n_generations=5, name=name)
+    GB = GeneticClassification(population_size=30, n_generations=5, name=name)
     GB.cv = 3
     GB.fit(x_train,y_train)
     GB.score(x_test,y_test,time()-s,information_work)

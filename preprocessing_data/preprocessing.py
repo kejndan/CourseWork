@@ -5,6 +5,7 @@ from preprocessing_data import binning
 import pandas as pd
 from preprocessing_data.log_transformation import to_log, to_box_cox
 from preprocessing_data import scaling
+from sklearn.preprocessing import OneHotEncoder
 
 
 class PreProcessing:
@@ -209,8 +210,8 @@ class PreProcessing:
         :return: индексы признаков с категориями
         """
         self.one_hot_features = []
-        for index in range(len(self.np_dataset[0, :])) :
-            if type(self.np_dataset[:, index]) == str :
+        for index in range(len(self.np_dataset[0])) :
+            if type(self.np_dataset[0, index]) == str :
                 self.one_hot_features.append(index)
         return self.one_hot_features
 
@@ -267,8 +268,20 @@ class PreProcessing:
         return self.np_dataset
 
     def get_dataframe(self):
-        print(self.np_dataset.shape,self.target.shape)
         return pd.DataFrame(np.concatenate((self.np_dataset, self.target[:,None]),axis=1))
+
+    def one_hot_encoder_categorical_features(self):
+        self.one_hot_check()
+        no_one_hot_features = []
+        for index in range(len(self.np_dataset[0])):
+            if index not in self.one_hot_features:
+                no_one_hot_features.append(index)
+        enc = OneHotEncoder()
+        transformed_features = enc.fit_transform(self.np_dataset[:, np.array(self.one_hot_features)]).toarray()
+        new_dataset = np.concatenate((self.np_dataset[:, np.array(no_one_hot_features)], transformed_features), axis=1)
+        return new_dataset
+
+
 
 if __name__ == '__main__' :
     # a = np.random.rand(100).reshape(10, 10)*100
@@ -279,11 +292,12 @@ if __name__ == '__main__' :
     # q = pp.binning(3, features=[0])
     # print(q)
     # df = pd.read_csv('../datasets/housing.csv')
-    a = np.array([['?', 2, 'o', 1], [3, 4, 'p', 0], [np.nan, 0, np.nan, 0], [4, 100, '?', 1]], dtype=np.object)
+    a = np.array([[1, 2, 'o', 1], [3, 4, 'p', 0], [np.nan, 0, np.nan, 0], [4, 100, '?', 1]], dtype=np.object)
     pp = PreProcessing(a, -1)
     print(pp.np_dataset)
     rules = {'processing_missing_values' : {'to' : 'del'}, 'handling_outliners' : {'method' : None, 'features' : [1]},
              'binning' : {'n_bins' : 3, 'features' : [1]}, 'transform' : {}}
     pp.preprocessing_manager(rules)
     print(pp.np_dataset)
+    print(pp.one_hot_encoder_categorical_features())
     print(pp.target)

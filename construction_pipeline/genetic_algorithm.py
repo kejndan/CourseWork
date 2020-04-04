@@ -658,26 +658,26 @@ class GeneticClustering(GeneticBase) :
 
 
 if __name__ == '__main__':
-    name = 'sonar.csv'
+    name = 'housing.csv'
 
     information_work = [[], []]
     df = pd.read_csv('../datasets/'+name)
     # df = df.drop(df.index[1000 :])
-    # df = df.drop(df.columns[0],1)
+    df = df.drop(df.columns[-1],1)
     pp = preprocessing.PreProcessing(df, -1)
     pp.processing_missing_values()
     df = pp.get_dataframe()
     print(df)
-    x_train, x_test, y_train, y_test = train_test_split(df.drop(df.columns[-1], 1), df[df.columns[-1]], test_size=.2)
-    print(df)
-    # GB = GeneticClustering(population_size=30, n_generations=5, name=name)
-    # GB.cv = 3
-    s = time()
-    GB = GeneticClassification(population_size=30, n_generations=5, name=name)
-    GB.cv = 3
-    GB.fit(x_train, y_train)
-    GB.score(x_test, y_test, time()-s, information_work, cross_val=False)
-    print(time()-s)
-    print(information_work)
-    print(np.array(information_work[0]))
-    print(np.array(information_work[1]))
+    for i in range(5):
+        x_train, x_test, y_train, y_test = train_test_split(df.drop(df.columns[-1], 1), df[df.columns[-1]], test_size=.2)
+        # GB = GeneticClustering(population_size=30, n_generations=5, name=name)
+        # GB.cv = 3
+        s = time()
+        GB = GeneticRegression(population_size=30, n_generations=5, name=name)
+        GB.cv = 3
+        GB.fit(x_train, y_train)
+        GB.score(x_test, y_test, time()-s, information_work, cross_val=False)
+        print(time()-s)
+        print(information_work)
+        print(np.array(information_work[0]).mean())
+        print(np.array(information_work[1]).mean())

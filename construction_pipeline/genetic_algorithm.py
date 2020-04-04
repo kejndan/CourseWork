@@ -321,7 +321,8 @@ class GeneticBase(object) :
 
     def _get_random_two_ind_for_mate(self, population) :
         """
-        Данная функция выбираем из популяции двух случайных индивидов (благоприятных), у которых есть хотя бы одна одинковая трансформация
+        Данная функция выбирает из популяции двух случайных индивидов (благоприятных),
+         у которых есть хотя бы одна одинковая трансформация
         :param population: переданная популяция
         :return: кортеж из двух случайных индивидов
         """
@@ -341,6 +342,11 @@ class GeneticBase(object) :
         return deepcopy(random_inds)
 
     def _mutate_operator(self, individual) :
+        """
+        Данная функция случайным образом определяет вид мутации индивида
+        :param individual: переданный индивид
+        :return: мутировавший индивид
+        """
         if np.random.random() <= 1 / 3 :
             new_individual = self._replacement_mutation(individual)
         elif np.random.random() <= 2 / 3 :
@@ -352,62 +358,51 @@ class GeneticBase(object) :
 
     def _replacement_mutation(self, individual) :
         """
-        Данная функция заменяет случайную трансформацию на другую или меняем её параметр на другой, если она является
-        примитивной, а если она терминальная, то меняем её аргумент на другой.
+        Данная функция заменяет случайную модель на другую или меняет её параметр на другой,
+         если она является примитивной, а если она терминальная, то меняет её аргумент на другой.
         :param individual: переданный индивид
         :return: новый выходной инвидид
         """
-        # TODO сделать замену терминала на другой терминал
         # TODO ? сделать замену трансформации в случае если она не имеет параметров
         ind_copy = deepcopy(individual)  # копируем индивид
         random_transform = random.choice(ind_copy)  # выбираем из индивида случайную трансформацию
-        if random_transform[0] < len(ind_copy) and np.random.random() <= 0.5 :
-            # если трансформация является примитивом, то с вероятность 50%  мы заменяем эту трансформацию на другой
-            # примитив
+        if np.random.random() <= 0.5:
+            if random_transform[0] < len(ind_copy):
+                # если трансформация является примитивом, то с вероятность 50%  мы заменяем эту трансформацию на другой
+                # примитив
 
-            # выбираем случайный примитив из набора классов и создаем объект
-            primitive_obj = random.choice(self._primitive_storage)()
+                # выбираем случайный примитив из набора классов и создаем объект
+                primitive_obj = random.choice(self._primitive_storage)()
+                self.__processing_hyperparameters_primitive(primitive_obj)
 
-            # делаем так чтобы параметры примитива имели только одно значение
-            self.__processing_hyperparameters_primitive(primitive_obj)
+                # заменяем нужную трансформацию на новый примитив
+                ind_copy[random_transform[0] - 1] = (random_transform[0], primitive_obj)
+            else:
+                terminal_obj = random.choice(self._terminal_storage)()
+                self.__processing_hyperparameters_primitive(terminal_obj)
+                # заменяем нужную трансформацию на новый примитив
+                ind_copy[random_transform[0] - 1] = (random_transform[0], terminal_obj)
 
-            # заменяем нужную трансформацию на новый примитив
-            ind_copy[random_transform[0] - 1] = (random_transform[0], primitive_obj)
-
-        else :
-            # если трансформация является терминалом или это примитив с вероятность 50%
-
+        else :  # если трансформация является терминалом или это примитив с вероятность 50%
             params = deepcopy(random_transform[1].__dict__)  # получаем параметры индивида
-
             # удаляем уточняющие параметры
             params.pop('type_transform')
             params.pop('name_transform')
 
-            if params != {} :
-                # если трансформация имеет параметры
-
+            if params != {} : # если трансформация имеет параметры
                 param = random.choice(list(params.keys()))  # выбираем случайный параметр
                 if param != 'estimator' :
-                    if random_transform[0] == len(ind_copy) :
-                        # если трансформация является терминалом
-
+                    if random_transform[0] == len(ind_copy) : # если трансформация является терминалом
                         # случайным образом выбираем новое значение для параметра из списка возможных
                         new_value = random.choice(self.terminal_models[random_transform[1].name_transform][param])
-
-                    else :
-                        # если трансформация является примитивом
+                    else : # если трансформация является примитивом
                         if random_transform[1].type_transform == 'selection' :
-
                             # случайным образом выбираем новое значение для параметра из списка возможных
                             new_value = random.choice(selection_models[random_transform[1].name_transform][param])
-
                         elif random_transform[1].type_transform == 'preprocessing' :
-
                             # случайным образом выбираем новое значение для параметра из списка возможных
                             new_value = random.choice(preprocessing_models[random_transform[1].name_transform][param])
-
-                        setattr(random_transform[1], param, new_value)  # присваеваем новое значение параметру
-
+                    setattr(random_transform[1], param, new_value)  # присваеваем новое значение параметру
         return ind_copy
 
     def _shrink_mutation(self, individual) :

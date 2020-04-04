@@ -68,7 +68,7 @@ class GeneticBase(object) :
 
     def _create_primitives_and_terminals_storage(self) :
         """
-        Данная функция превращает словари в файле models.py в классы библиотеки sklearn
+        Данная функция превращает словари в файле models.py в классы
         *primitive - это модели, которые не должны находится в конце пайплайна (обычно они выполняют
          какую-то предобработку данных)
         *terminals - это модели, которые могут находится в конце пайплайна, то есть обучающие модели
@@ -131,7 +131,7 @@ class GeneticBase(object) :
 
     def __processing_hyperparameters_primitive(self, primitive_obj):
         """
-        Данная функция инициализирует гиперпараметры из класса объекта в переданный объект
+        Данная функция инициализирует гиперпараметры из класса  в переданный объект
         :param primitive_obj: передаваемый объект
         """
         for name_variables in self.__list_variables(primitive_obj) :
@@ -192,7 +192,7 @@ class GeneticBase(object) :
         :param targets: Y датасета
         :return:
         """
-        pipeline_list = self._toolbox.compile(population)  # конвертация условного пайплайна в sklearn пайплайн
+        pipeline_list = self._toolbox.compile(population)  # конвертация псевдо пайплайна в sklearn пайплайн
         for number_pipeline, pipeline in enumerate(pipeline_list) :
             with warnings.catch_warnings() :
                 # warnings.simplefilter('ignore')  # скрытие предупреждений
@@ -224,7 +224,6 @@ class GeneticBase(object) :
                 except FunctionTimedOut :
                     score = -float('inf')
                     time = float('inf')
-
                 except Exception as e :
                     # print(e)
                     score = -float('inf')
@@ -235,6 +234,11 @@ class GeneticBase(object) :
                     population[number_pipeline].time = time
 
     def _population_to_sklearn(self, population) :
+        """
+        Данная функция конвертирует псевдо пайплайны популяции в пайплайны sklearn
+        :param population: переданная популяция из псевдо пайплайнов
+        :return: популяция из sklearn пайплайнов
+        """
         pipeline_list = []
         for individual in population :
             pipeline = self.individual_to_sklearn(individual)
@@ -242,9 +246,20 @@ class GeneticBase(object) :
         return pipeline_list
 
     def individual_to_sklearn(self, individual) :
+        """
+        Данная функция конвертирует индивид, который является в псевдо пайплайном в пайплайн sklearn
+        :param individual: переданный индивид
+        :return: пайплайн sklearn
+        """
         return make_pipeline(*[self._transform_to_sklearn(transform[1]) for transform in individual])
 
     def _transform_to_sklearn(self, transform, with_param=True) :
+        """
+        Данная функция превращает переданную модель в sklearn объект
+        :param transform: переданная модель
+        :param with_param: нужно ли удалять вспомогательные параметры
+        :return: sklearn объект
+        """
         if with_param :
             kwargs = deepcopy(transform.__dict__)
             if kwargs.get('type_transform') :

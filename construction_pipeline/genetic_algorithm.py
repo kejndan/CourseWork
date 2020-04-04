@@ -130,6 +130,10 @@ class GeneticBase(object) :
         individual.info = tuple(names)
 
     def __processing_hyperparameters_primitive(self, primitive_obj):
+        """
+        Данная функция инициализирует гиперпараметры из класса объекта в переданный объект
+        :param primitive_obj: передаваемый объект
+        """
         for name_variables in self.__list_variables(primitive_obj) :
             if name_variables == 'estimator' :
                 name_estimator = random.choice(list(primitive_obj.estimator.keys()))
@@ -153,23 +157,31 @@ class GeneticBase(object) :
             expression = []
             height = random.randint(self.min_height, self.max_height)  # выбираем случайную длину пайплайна h
 
-            # данный цикл идёт от 1 до h - 1
             # на данном этапе мы заполняем пайплайн h -1 примитивом
+            # данный цикл идёт от 1 до h - 1
             for index_transforms in range(1, height) :
-                # выбираем случайный класс примитива и инициализируем объект
+                # выбираем случайный класс примитива после чего инициализируем объект и его гиперпараметры
                 primitive_obj = random.choice(self._primitive_storage)()
                 self.__processing_hyperparameters_primitive(primitive_obj)
                 expression.append((index_transforms, primitive_obj))
+
+            # заполняем пайплайн терминальной моделью
+            # выбираем случайный класс терминала после чего инициализируем объект и его гиперпараметры
             terminal_obj = random.choice(self._terminal_storage)()
             for name_variables in self.__list_variables(terminal_obj) :
                 setattr(terminal_obj, name_variables, random_value_from(terminal_obj, name_variables))
             expression.append((height, terminal_obj))
+
+            # подсчёт сколько пайплайнов такого же типа уже имеется
             count = 1
             for individual in self._control_population :
                 if self._compare_inds(individual, expression) :
                     count += 1
-            if count <= 0.01 * self.population_size or count <= 1 :
+            # если количество одинковых пайплайнов меньше заданного процента или равно единице,
+            # то добавляем созданный пайплайн
+            if count <= 0.05 * self.population_size or count == 1 :
                 expression_added = True
+        self._control_population.append(expression)
         return expression
 
     def _evaluation_individuals(self, population, pipeline_list, features, targets) :
@@ -181,7 +193,7 @@ class GeneticBase(object) :
                     if len(self.time_list) > self.population_size*0.10:
                         if avg_time < 1:
                             avg_time = 1
-                        stop_time = avg_time *10
+                        stop_time = avg_time * 10
                     else:
                         stop_time = 600
                     # stop_time = avg_time*10 if len(self.time_list) > self.population_size*0.10 else 600
@@ -558,7 +570,7 @@ class GeneticBase(object) :
         for ind in self.population[learned_pipelines[0][0]] :
             print(ind[1].name_transform, ind[1].__dict__)
 
-        self.export_information(learned_pipelines, err, time_work)
+        # self.export_information(learned_pipelines, err, time_work)
         for i, p in enumerate(self.population) :
             print(i, p, p.fitness.values)
         for i in learned_pipelines :
@@ -628,7 +640,7 @@ if __name__ == '__main__':
     # GB = GeneticClustering(population_size=30, n_generations=5, name=name)
     # GB.cv = 3
     s = time()
-    GB = GeneticRegression(population_size=30, n_generations=5, name=name)
+    GB = GeneticRegression(population_size=100, n_generations=5, name=name)
     GB.cv = 3
     GB.fit(x_train,y_train)
     GB.score(x_test,y_test,time()-s,information_work)

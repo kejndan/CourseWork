@@ -22,6 +22,7 @@ from sklearn.metrics import accuracy_score
 from datetime import datetime
 from func_timeout import func_timeout, FunctionTimedOut
 from preprocessing_data import preprocessing
+from tpot import TPOTClassifier, TPOTRegressor
 
 CALLABLES = (types.FunctionType, types.MethodType)
 
@@ -658,14 +659,16 @@ class GeneticClustering(GeneticBase) :
 
 
 if __name__ == '__main__':
-    name = 'housing.csv'
+    name = 'movement_libras.data'
 
-    information_work = [[], []]
+    information_work_sam = [[], []]
+    information_work_tpot = [[], []]
     df = pd.read_csv('../datasets/'+name)
     # df = df.drop(df.index[1000 :])
-    df = df.drop(df.columns[-1],1)
+    # df = df.drop(df.columns[-1],1)
     pp = preprocessing.PreProcessing(df, -1)
     pp.processing_missing_values()
+    # pp.one_hot_encoder_categorical_features()
     df = pp.get_dataframe()
     print(df)
     for i in range(5):
@@ -673,11 +676,36 @@ if __name__ == '__main__':
         # GB = GeneticClustering(population_size=30, n_generations=5, name=name)
         # GB.cv = 3
         s = time()
-        GB = GeneticRegression(population_size=30, n_generations=5, name=name)
+        GB = GeneticClassification(population_size=30, n_generations=5, name=name)
         GB.cv = 3
         GB.fit(x_train, y_train)
-        GB.score(x_test, y_test, time()-s, information_work, cross_val=False)
-        print(time()-s)
-        print(information_work)
-        print(np.array(information_work[0]).mean())
-        print(np.array(information_work[1]).mean())
+        GB.score(x_test, y_test, time()-s, information_work_sam, cross_val=False)
+        # print(time()-s)
+        t1 = information_work_sam[1][-1]
+        res1 = information_work_sam[0][-1]
+        print(res1)
+        print(t1)
+        # print(np.array(information_work[0]).mean())
+        # print(np.array(information_work[1]).mean())
+        tpotr = TPOTClassifier(generations=5, population_size=30, verbosity=2, n_jobs=1)
+        s = time()
+        y_train = y_train.astype(np.int)
+        tpotr.fit(x_train, y_train)
+        t2 = time() - s
+        res2 = tpotr.score(x_test, y_test)
+        print(res2)
+        print(t2)
+        print('-'*100)
+        information_work_tpot[0].append(res2)
+        information_work_tpot[1].append(t2)
+        with open('new_'+name[:name.rfind('.')] + '_stats.txt', 'a') as f :
+            f.write('MyAlg ' + str(res1) + ' ' + str(t1) + '\n')
+            f.write('TPOTAlg ' + str(res2) + ' ' + str(t2) + '\n')
+    print(np.array(information_work_sam[0]).mean())
+    print(np.array(information_work_sam[1]).mean())
+    print(np.array(information_work_tpot[0]).mean())
+    print(np.array(information_work_tpot[1]).mean())
+    with open('new_' + name[:name.rfind('.')] + '_stats.txt', 'a') as f :
+        f.write('\n')
+        f.write('MyAlg ' + str(np.array(information_work_sam[0]).mean()) + ' ' + str(np.array(information_work_sam[1]).mean()) + '\n')
+        f.write('TPOTAlg ' + str(np.array(information_work_tpot[0]).mean()) + ' ' + str(np.array(information_work_tpot[1]).mean()) + '\n')

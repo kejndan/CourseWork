@@ -278,8 +278,8 @@ class PreProcessing:
                 no_one_hot_features.append(index)
         enc = OneHotEncoder()
         transformed_features = enc.fit_transform(self.np_dataset[:, np.array(self.one_hot_features)]).toarray()
-        new_dataset = np.concatenate((self.np_dataset[:, np.array(no_one_hot_features)], transformed_features), axis=1)
-        return new_dataset
+        self.np_dataset = np.concatenate((self.np_dataset[:, np.array(no_one_hot_features)], transformed_features), axis=1)
+        return self.np_dataset
 
 
 

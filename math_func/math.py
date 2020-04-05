@@ -32,3 +32,7 @@ def entropy(elements, sum_elements):
     for elem in elements:
         elem_entropy -= (elem / sum_elements) * np.log2(elem / sum_elements)
     return elem_entropy
+
+
+
+

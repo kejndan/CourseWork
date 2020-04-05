@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+from preprocessing_data import feature_select, preprocessing
 def calc_score(scores_with_data):
     list_scores = []
     for score in scores_with_data:
@@ -11,8 +11,13 @@ def calc_score(scores_with_data):
 
 
 if __name__ == "__main__":
-    f = pd.read_csv('datasets/housing.csv')
-    target = np.array(f[f.columns[-2]]).mean()
+    df = pd.read_csv('datasets/regression/automobile.data')
+    pp = preprocessing.PreProcessing(df, -1)
+    pp.processing_missing_values()
+    pp.one_hot_encoder_categorical_features()
+    df = pp.get_dataframe()
+    target = np.array(df[df.columns[-1]]).mean()
+
     print(target)
     # with open('results/movement_libras_stats2.txt', 'r') as f:
     #     scores = f.read().splitlines()

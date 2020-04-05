@@ -63,8 +63,12 @@ class PreProcessing:
                         else :
                             index_filled_values.append(sample)
                     else:
-                        this_column_categorical = True
-                        index_filled_values.append(sample)
+                        try:
+                            self.np_dataset[sample, feature] = np.float(self.np_dataset[sample, feature])
+                        except Exception:
+                            this_column_categorical = True
+                        finally:
+                            index_filled_values.append(sample)
                 if 1 - len(index_missing_values) / len(self.np_dataset) > 0.2 :
                     if len(index_filled_values) != 0 :
                         if this_column_categorical:
@@ -74,8 +78,10 @@ class PreProcessing:
                     if len(np.array(index_missing_values)) != 0 :
                         self.np_dataset[np.array(index_missing_values), feature] = value
                     index_no_del_features.append(feature)
+            self.del_nan_from_target()
             self.np_dataset = self.np_dataset[:, index_no_del_features]
         elif to == 'mean' or to == 'median' or to == 'most_frequent' :
+            # TODO сделать как auto
             for feature in features :
                 index_missing_values = []
                 index_filled_values = []
@@ -100,6 +106,24 @@ class PreProcessing:
             self.np_dataset = full_dataset_without_nan[:, :-1]
             self.target = full_dataset_without_nan[:, -1 :]
         return self.np_dataset
+
+    def del_nan_from_target(self):
+        # TODO добавить комментрарий
+        base_null = ['null', 'NULL', 'NaN', 'nan', '-', '?']
+        for sample in range(len(self.target)):
+            if self.target[sample] in base_null \
+                    or type(self.target[sample]) != str :
+                if self.target[sample] in base_null or np.isnan(self.target[sample]) :
+                    self.target[sample] = np.nan
+            else :
+                self.target[sample] = np.float(self.target[sample])
+        full_dataset = np.concatenate((self.np_dataset, self.target[:, None]), axis=1)
+        full_dataset_without_nan = np.array(pd.DataFrame(full_dataset).dropna())
+        # full_dataset_without_nan = np.where(full_dataset_without_nan not in base_null)
+        self.np_dataset = full_dataset_without_nan[:, :-1]
+        self.target = full_dataset_without_nan[:, -1 :]
+        return self.np_dataset
+
 
     def handling_outliners(self, method=None, factor=3, features=None) :
         """
@@ -268,7 +292,10 @@ class PreProcessing:
         return self.np_dataset
 
     def get_dataframe(self):
-        return pd.DataFrame(np.concatenate((self.np_dataset, self.target[:,None]),axis=1))
+        if len(self.target.shape) == 2:
+            return pd.DataFrame(np.concatenate((self.np_dataset, self.target), axis=1))
+        else:
+            return pd.DataFrame(np.concatenate((self.np_dataset, self.target[:,None]),axis=1))
 
     def one_hot_encoder_categorical_features(self):
         self.one_hot_check()

@@ -212,7 +212,7 @@ class GeneticBase(object) :
         pipeline_list = self._toolbox.compile(population)  # конвертация псевдо пайплайна в sklearn пайплайн
         for number_pipeline, pipeline in enumerate(pipeline_list) :
             with warnings.catch_warnings() :
-                # warnings.simplefilter('ignore')  # скрытие предупреждений
+                warnings.simplefilter('ignore')  # скрытие предупреждений
                 # подсчёт среднего времени кросс-валидации одного пайплайна
                 avg_time = np.array(self.time_list).mean()*self.cv
                 # установка максимального времени кросс-валидации одного пайплайна
@@ -610,6 +610,18 @@ class GeneticBase(object) :
             print(i, p, p.fitness.values)
         for i in learned_pipelines :
             print(i)
+
+    def export_pipeline(self, learned_pipelines):
+        pipeline = []
+        for ind in self.population[learned_pipelines[0][0]] :
+            func = ind[1].name_transform+'('
+            for k,v in ind[1].__dict__.items():
+                if k != 'name_transform' and 'type_transform':
+                    func +=f'{k}={v},'
+            func = func[:-1]
+            func += ')'
+            pipeline.append(func)
+        print(pipeline)
 
     def export_information(self, learned_pipelines, error, time_work) :
         with open(self.name + '.txt', 'a') as f :

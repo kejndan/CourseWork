@@ -8,7 +8,7 @@ from preprocessing_data import scaling
 from sklearn.preprocessing import OneHotEncoder
 
 
-class PreProcessing:
+class PreProcessing :
     """
     Данный класс используется для предобработки датасета:
     *обработка пропущенных значений
@@ -18,17 +18,20 @@ class PreProcessing:
     *уменьшений значений(scaling)
     """
 
-    def __init__(self, dataset, index_target=None) :
+    def __init__(self, dataset, index_target=-1) :
         """
         :param dataset: полный датасет(X и Y)
         :param index_target: индекс столбца Y
         """
         self.dataset = pd.DataFrame(dataset)
         if index_target is None :
-            index_target = -1
-        self.target = np.array(self.dataset[self.dataset.columns[index_target]], dtype=np.object)
-        self.np_dataset = np.array(self.dataset.drop(self.dataset.columns[index_target], 1), dtype=np.object)
+            self.target = None
+            self.np_dataset = np.array(self.dataset, dtype=np.object)
+        else :
+            self.target = np.array(self.dataset[self.dataset.columns[index_target]], dtype=np.object)
+            self.np_dataset = np.array(self.dataset.drop(self.dataset.columns[index_target], 1), dtype=np.object)
         self.one_hot_features = []
+        self.enc = None
 
     def processing_missing_values(self, to='auto', features=None) :
         """
@@ -62,24 +65,28 @@ class PreProcessing:
                             index_missing_values.append(sample)
                         else :
                             index_filled_values.append(sample)
-                    else:
-                        try:
+                    else :
+                        try :
                             self.np_dataset[sample, feature] = np.float(self.np_dataset[sample, feature])
-                        except Exception:
+                        except Exception :
                             this_column_categorical = True
-                        finally:
+                        finally :
                             index_filled_values.append(sample)
                 if 1 - len(index_missing_values) / len(self.np_dataset) > 0.2 :
                     if len(index_filled_values) != 0 :
-                        if this_column_categorical:
+                        if this_column_categorical :
                             value = mode(self.np_dataset[np.array(index_filled_values), feature])[0][0]
-                        else:
+                        else :
                             value = self.np_dataset[np.array(index_filled_values), feature].mean()
                     if len(np.array(index_missing_values)) != 0 :
                         self.np_dataset[np.array(index_missing_values), feature] = value
                     index_no_del_features.append(feature)
-            self.del_nan_from_target()
+                else:
+                    print(feature)
             self.np_dataset = self.np_dataset[:, index_no_del_features]
+            if self.target is not None :
+                self.del_nan_from_target()
+
         elif to == 'mean' or to == 'median' or to == 'most_frequent' :
             # TODO сделать как auto
             for feature in features :
@@ -107,14 +114,16 @@ class PreProcessing:
             self.target = full_dataset_without_nan[:, -1 :]
         return self.np_dataset
 
-    def del_nan_from_target(self):
+    def del_nan_from_target(self) :
         # TODO добавить комментрарий
         base_null = ['null', 'NULL', 'NaN', 'nan', '-', '?']
-        for sample in range(len(self.target)):
+        for sample in range(len(self.target)) :
             if self.target[sample] in base_null \
                     or type(self.target[sample]) != str :
                 if self.target[sample] in base_null or np.isnan(self.target[sample]) :
                     self.target[sample] = np.nan
+                else :
+                    self.target[sample] = np.float(self.target[sample])
             else :
                 self.target[sample] = np.float(self.target[sample])
         full_dataset = np.concatenate((self.np_dataset, self.target[:, None]), axis=1)
@@ -123,7 +132,6 @@ class PreProcessing:
         self.np_dataset = full_dataset_without_nan[:, :-1]
         self.target = full_dataset_without_nan[:, -1 :]
         return self.np_dataset
-
 
     def handling_outliners(self, method=None, factor=3, features=None) :
         """
@@ -228,7 +236,7 @@ class PreProcessing:
                     self.np_dataset[:, feature] = scaling.l2_normalized(self.np_dataset[:, feature])
             return self.np_dataset
 
-    def one_hot_check(self):
+    def one_hot_check(self) :
         """
         Данная функция проверяет признака на то, чтобы они не были категориальными
         :return: индексы признаков с категориями
@@ -291,21 +299,28 @@ class PreProcessing:
         self.one_hot_check()
         return self.np_dataset
 
-    def get_dataframe(self):
-        if len(self.target.shape) == 2:
-            return pd.DataFrame(np.concatenate((self.np_dataset, self.target), axis=1))
-        else:
-            return pd.DataFrame(np.concatenate((self.np_dataset, self.target[:,None]),axis=1))
+    def get_dataframe(self) :
+        if self.target is None :
+            return pd.DataFrame(self.np_dataset)
+        else :
+            if len(self.target.shape) == 2 :
+                return pd.DataFrame(np.concatenate((self.np_dataset, self.target), axis=1))
+            else :
+                return pd.DataFrame(np.concatenate((self.np_dataset, self.target[:, None]), axis=1))
 
-    def one_hot_encoder_categorical_features(self):
+    def one_hot_encoder_categorical_features(self) :
         self.one_hot_check()
         no_one_hot_features = []
-        for index in range(len(self.np_dataset[0])):
-            if index not in self.one_hot_features:
+        for index in range(len(self.np_dataset[0])) :
+            if index not in self.one_hot_features :
                 no_one_hot_features.append(index)
-        enc = OneHotEncoder()
-        transformed_features = enc.fit_transform(self.np_dataset[:, np.array(self.one_hot_features)]).toarray()
-        self.np_dataset = np.concatenate((self.np_dataset[:, np.array(no_one_hot_features)], transformed_features), axis=1)
+        if len(self.one_hot_features) != 0 :
+            if self.enc is None:
+                self.enc = OneHotEncoder()
+                self.enc.fit(self.np_dataset[:, np.array(self.one_hot_features)])
+            transformed_features = self.enc.transform(self.np_dataset[:, np.array(self.one_hot_features)]).toarray()
+            self.np_dataset = np.concatenate((self.np_dataset[:, np.array(no_one_hot_features)], transformed_features),
+                                             axis=1)
         return self.np_dataset
 
 

@@ -1,4 +1,4 @@
-
+# coding=utf8
 import pandas as pd
 import os
 import tarfile
@@ -10,17 +10,18 @@ from construction_pipeline import genetic_algorithm
 from sklearn.model_selection import train_test_split
 from time import time
 from tpot import TPOTRegressor
+from sklearn.metrics import mean_squared_log_error
 
 
 if __name__ == '__main__':
-    name = 'regression/automobile.data'
+    name = 'regression/diamonds.csv'
 
     information_work_sam = [[], []]
     information_work_tpot = [[], []]
     df = pd.read_csv('datasets/' + name)
-    # df = df.drop(df.index[1000 :])
-    # df = df.drop(df.columns[-1],1)
-    pp = preprocessing.PreProcessing(df, -1)
+    df = df.drop(df.index[10000 :])
+    # df = df.drop(df.columns[4],1)
+    pp = preprocessing.PreProcessing(df, -4)
     pp.processing_missing_values()
     pp.one_hot_encoder_categorical_features()
     df = pp.get_dataframe()
@@ -30,13 +31,15 @@ if __name__ == '__main__':
     # x_train, y_train, x_test, y_test = FS.main(.1, 0.4)
     # print(pd.DataFrame(x_train))
     # print(pd.DataFrame(y_train))
-    for i in range(1) :
+    for i in range(5) :
         x_train, x_test, y_train, y_test = train_test_split(df.drop(df.columns[-1], 1), df[df.columns[-1]], test_size=.2)
         # GB = GeneticClustering(population_size=30, n_generations=5, name=name)
         # GB.cv = 3
         s = time()
-        GB = genetic_algorithm.GeneticRegression(population_size=30, n_generations=5, name=name)
+        GB = genetic_algorithm.GeneticRegression(population_size=50, n_generations=5, name=name)
         GB.cv = 3
+        # GB.cv_func = 'neg_mean_squared_log_error'
+        # GB.score_func = mean_squared_log_error
         GB.fit(x_train, y_train)
         GB.score(x_test, y_test, time() - s, information_work_sam, cross_val=False)
         # print(time()-s)
@@ -54,16 +57,18 @@ if __name__ == '__main__':
         res2 = tpotr.score(x_test, y_test)
         print(res2)
         print(t2)
-        print('-'*100)
-        information_work_tpot[0].append(res2)
-        information_work_tpot[1].append(t2)
+        # print('-'*100)
+        # information_work_tpot[0].append(res2)
+        # information_work_tpot[1].append(t2)
         # with open('new_'+name[:name.rfind('.')] + '_stats.txt', 'a') as f :
         #     f.write('MyAlg ' + str(res1) + ' ' + str(t1) + '\n')
         #     f.write('TPOTAlg ' + str(res2) + ' ' + str(t2) + '\n')
     print(np.array(information_work_sam[0]).mean())
     print(np.array(information_work_sam[1]).mean())
-    print(np.array(information_work_tpot[0]).mean())
-    print(np.array(information_work_tpot[1]).mean())
+    print(information_work_sam[0])
+    print(information_work_sam[1])
+    # print(np.array(information_work_tpot[0]).mean())
+    # print(np.array(information_work_tpot[1]).mean())
     # with open('new_' + name[:name.rfind('.')] + '_stats.txt', 'a') as f :
     #     f.write('\n')
     #     f.write('MyAlg ' + str(np.array(information_work_sam[0]).mean()) + ' ' + str(np.array(information_work_sam[1]).mean()) + '\n')

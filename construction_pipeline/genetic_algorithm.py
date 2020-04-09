@@ -212,7 +212,7 @@ class GeneticBase(object) :
         pipeline_list = self._toolbox.compile(population)  # конвертация псевдо пайплайна в sklearn пайплайн
         for number_pipeline, pipeline in enumerate(pipeline_list) :
             with warnings.catch_warnings() :
-                warnings.simplefilter('ignore')  # скрытие предупреждений
+                # warnings.simplefilter('ignore')  # скрытие предупреждений
                 # подсчёт среднего времени кросс-валидации одного пайплайна
                 avg_time = np.array(self.time_list).mean()*self.cv
                 # установка максимального времени кросс-валидации одного пайплайна

@@ -115,6 +115,8 @@ class PreProcessing :
         return self.np_dataset
 
     def del_nan_from_target(self) :
+        map_target = dict()
+        number_map_target = None
         # TODO добавить комментрарий
         base_null = ['null', 'NULL', 'NaN', 'nan', '-', '?']
         for sample in range(len(self.target)) :
@@ -124,8 +126,20 @@ class PreProcessing :
                     self.target[sample] = np.nan
                 else :
                     self.target[sample] = np.float(self.target[sample])
+
+
             else :
-                self.target[sample] = np.float(self.target[sample])
+                try :
+                    self.target[sample] = np.float(self.target[sample])
+                except Exception :
+                    if self.target[sample] not in map_target :
+                        if number_map_target is None :
+                            number_map_target = 0
+                        map_target[self.target[sample]] = number_map_target
+                        number_map_target += 1
+        if number_map_target is not None:
+            for sample in range(len(self.target)):
+                self.target[sample] = map_target[self.target[sample]]
         full_dataset = np.concatenate((self.np_dataset, self.target[:, None]), axis=1)
         full_dataset_without_nan = np.array(pd.DataFrame(full_dataset).dropna())
         # full_dataset_without_nan = np.where(full_dataset_without_nan not in base_null)

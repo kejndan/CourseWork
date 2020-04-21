@@ -11,7 +11,7 @@
 \begin{itemize}
 	\item \textit{criterion:} \{gini, entropy\}
 	\item \textit{max\_depth:} [1, 29]
-	\item \textit{min\_samples\_split:} [1, 29]
+	\item \textit{min\_samples\_split:} [2, 29]
 	\item \textit{min\_samples\_leaf:} [1, 29]
 \end{itemize}
 Соответственно получая 47 096 возможных комбинаций значений гиперпараметров.
@@ -38,8 +38,8 @@
 Для данных алгоритмов следующий начальный набор значений:
 \begin{itemize}
 	\item \textit{criterion:} \{gini, entropy\}
-	\item \textit{max\_features:} [0.1, 1.0], с шагом 0.5
-	\item \textit{min\_samples\_split:} [1, 29]
+	\item \textit{max\_features:} [0.1, 1.0], с шагом 0.05
+	\item \textit{min\_samples\_split:} [2, 29]
 	\item \textit{min\_samples\_leaf:} [1, 29]
 \end{itemize}
 Соответственно получая 30 856 возможных комбинаций значений гиперпараметров.
@@ -51,7 +51,7 @@
 После того как мы избавимся от значений гиперпараметров, которые встречаются реже всего или имеют низкий показатель точности, получим следующие возможные значения:
 \begin{itemize}
 	\item \textit{criterion:} \{gini, entropy\}
-	\item \textit{max\_features:} [0.1, 1.0], с шагом 0.5
+	\item \textit{max\_features:} [0.1, 1.0], с шагом 0.05
 	\item \textit{min\_samples\_split:} [1, 29]
 	\item \textit{min\_samples\_leaf:} [1, 20]
 \end{itemize}
@@ -69,7 +69,7 @@
 	\item \textit{min\_samples\_split:} [2, 30]
 	\item \textit{min\_samples\_leaf:} [1, 30]
 	\item \textit{subsample:} [0.1, 1.00], с шагом 0.05
-	\item \textit{max\_features:} [0.05, 1.0], с шагом 0.5
+	\item \textit{max\_features:} [0.05, 1.0], с шагом 0.05
 \end{itemize}
 Соответственно получая 35 175 840 возможных комбинаций значений гиперпараметров.
 \begin{figure}
@@ -85,7 +85,7 @@
 	\item \textit{min\_samples\_split:} [5, 30]
 	\item \textit{min\_samples\_leaf:} [1, 30]
 	\item \textit{subsample:} [0.1, 1.00], с шагом 0.05
-	\item \textit{max\_features:} [0.05, 1.0], с шагом 0.5
+	\item \textit{max\_features:} [0.05, 1.0], с шагом 0.05
 \end{itemize}
 \begin{figure}
 	\includegraphics{GradientBoostingClassifier_changed}

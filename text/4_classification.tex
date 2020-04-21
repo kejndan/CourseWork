@@ -1,0 +1,147 @@
+
+	
+Для вычисления оптимальных возможных значений гиперпараметров алгоритмов классификации используется 20 датасетов, таблица с ними будет приведена ниже.
+
+\textbf{ТАБЛИЦА}
+
+Метрикой качества здесь будет являться F-мера: $ F = \frac{2 * precision * recall}{precision+recall} $
+
+\subsection{Дерево решений (Decision Tree)}
+Рассмотрим для данного алгоритма следующий начальный набор значений:
+\begin{itemize}
+	\item \textit{criterion:} \{gini, entropy\}
+	\item \textit{max\_depth:} [1, 29]
+	\item \textit{min\_samples\_split:} [1, 29]
+	\item \textit{min\_samples\_leaf:} [1, 29]
+\end{itemize}
+Соответственно получая 47 096 возможных комбинаций значений гиперпараметров.
+\begin{figure}
+	\includegraphics{DecisionTreeClassifier}
+	\caption{Начальный набор значений гиперпараметров для алгоритма Decision tree classifier.}
+\end{figure}
+
+После того как мы избавимся от значений гиперпараметров, которые встречаются реже всего или имеют низкий показатель точности, получим следующие:
+\begin{itemize}
+	\item \textit{criterion:} \{gini, entropy\}
+	\item \textit{max\_depth:} [5, 29]
+	\item \textit{min\_samples\_split:} [1, 29]
+	\item \textit{min\_samples\_leaf:} [1, 25]
+\end{itemize}
+\begin{figure}
+	\includegraphics{DecisionTreeClassifier_changed}
+	\caption{Итоговый набор значений гиперпараметров для алгоритма Decision tree classifier.}
+\end{figure}
+Теперь данный алгоритм имеет 35000 возможных комбинации значений гиперпараметров. 79\% точек осталось.
+
+\subsection{Cлучайные и сверхслучайные деревья решения (Random Forest and Extra Trees)}
+Здесь будет рассмотрено сразу два алгоритма Random Forest и Extra Trees, так как это схожие алгоритмы и начальный набор значений гиперпараметров для них был один тот же. 
+Для данных алгоритмов следующий начальный набор значений:
+\begin{itemize}
+	\item \textit{criterion:} \{gini, entropy\}
+	\item \textit{max\_features:} [0.1, 1.0], с шагом 0.5
+	\item \textit{min\_samples\_split:} [1, 29]
+	\item \textit{min\_samples\_leaf:} [1, 29]
+\end{itemize}
+Соответственно получая 30 856 возможных комбинаций значений гиперпараметров.
+\begin{figure}
+	\includegraphics{RandomExtraClassifier}
+	\caption{Начальный набор значений гиперпараметров для алгоритмов Random forest classifier и Extra trees classifier.}
+\end{figure}
+
+После того как мы избавимся от значений гиперпараметров, которые встречаются реже всего или имеют низкий показатель точности, получим следующие возможные значения:
+\begin{itemize}
+	\item \textit{criterion:} \{gini, entropy\}
+	\item \textit{max\_features:} [0.1, 1.0], с шагом 0.5
+	\item \textit{min\_samples\_split:} [1, 29]
+	\item \textit{min\_samples\_leaf:} [1, 20]
+\end{itemize}
+\begin{figure}
+	\includegraphics{RandomExtraClassifier_changed}
+	\caption{Итоговый набор значений гиперпараметров для алгоритмов  Random forest classifier и Extra trees classifier.}
+\end{figure}
+Теперь данные алгоритмы имеют 21 280 возможных комбинации значений гиперпараметров. 82\% точек осталось. 
+
+\subsection{Градиентный бустинг (Gradient boosting)}
+Рассмотрим для данного алгоритма следующий начальный набор значений гиперпараметров:
+\begin{itemize}
+	\item \textit{learning\_rate:} \{1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1\}
+	\item \textit{max\_depth:} [1, 19]
+	\item \textit{min\_samples\_split:} [2, 30]
+	\item \textit{min\_samples\_leaf:} [1, 30]
+	\item \textit{subsample:} [0.1, 1.00], с шагом 0.05
+	\item \textit{max\_features:} [0.05, 1.0], с шагом 0.5
+\end{itemize}
+Соответственно получая 35 175 840 возможных комбинаций значений гиперпараметров.
+\begin{figure}
+	\includegraphics{GradientBoostingClassifier}
+	\caption{Начальный набор значений гиперпараметров для алгоритма Gradient Boosting classifier.}
+\end{figure}
+
+
+После того как мы избавимся от значений гиперпараметров, которые встречаются реже всего или имеют низкий показатель точности, получим следующие возможные значения:
+\begin{itemize}
+	\item \textit{learning\_rate:} \{1e-3, 1e-2, 1e-1, 0.5\}
+	\item \textit{max\_depth:} [1, 19]
+	\item \textit{min\_samples\_split:} [5, 30]
+	\item \textit{min\_samples\_leaf:} [1, 30]
+	\item \textit{subsample:} [0.1, 1.00], с шагом 0.05
+	\item \textit{max\_features:} [0.05, 1.0], с шагом 0.5
+\end{itemize}
+\begin{figure}
+	\includegraphics{GradientBoostingClassifier_changed}
+	\caption{Итоговый набор значений гиперпараметров для алгоритма для алгоритма Gradient Boosting classifier.}
+\end{figure}
+Теперь данный алгоритм имеет 20 938 000 возможных комбинации значений гиперпараметров. 77\% точек осталось. 
+
+\subsection{XGBoost}
+Рассмотрим для данного алгоритма следующий начальный набор значений гиперпараметров:
+\begin{itemize}
+	\item \textit{learning\_rate:} \{0.0001, 0.001, 0.01,, 0.1, 0.5, 1\}
+	\item \textit{max\_depth:} [1, 20]
+	\item \textit{subsample:} [0.05, 1.00], с шагом 0.05
+	\item \textit{min\_child\_weight:} [1, 29]
+\end{itemize}
+Соответственно получая 66 120 возможных комбинаций значений гиперпараметров.
+\begin{figure}
+	\includegraphics{XGBoostClassifier}
+	\caption{Начальный набор значений гиперпараметров для алгоритма XGBoost classifier.}
+\end{figure}
+
+После того как мы избавимся от значений гиперпараметров, которые встречаются реже всего или имеют низкий показатель точности, получим следующие возможные значения:
+\begin{itemize}
+	\item \textit{learning\_rate:} \{0.01, 0.1, 0.5, 1\}
+	\item \textit{max\_depth:} [1, 20]
+	\item \textit{subsample:} [0.05, 1.00], с шагом 0.05
+	\item \textit{min\_child\_weight:} [1, 20]
+\end{itemize}
+\begin{figure}
+	\includegraphics{XGBoostClassifier_changed}
+	\caption{Итоговый набор значений гиперпараметров для алгоритма для алгоритма XGBoost classifier.}
+\end{figure}
+Теперь данный алгоритм имеет 30 400 возможных комбинации значений гиперпараметров. 70\% точек осталось.\newline
+
+Следующие алгоритмы имеют относительно маленькое число возможных значений гиперпараметров, поэтому для них не будет выполняться поиск наиболее оптимальных возможных значений гиперепараметров.
+
+\subsection{Метод k-ближайших соседей (k-nearest neighbors)}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{n\_neighbors:} [1, 100]
+	\item \textit{weights:} \{uniform, distance\}
+	\item \textit{p:} \{1, 2\}
+\end{itemize}
+
+\subsection{Логистическая регрессия  (Logistic Regression)}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{penalty:} \{elasticnet\}
+	\item \textit{l1\_ratio:} \{0.25, 0.0, 1.0, 0.75, 0.5\}
+	\item \textit{C:} \{1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1, 5, 10, 15, 20, 25, 50, 70\}
+\end{itemize}
+
+\subsection{AdaBoost}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{learning\_rate:} \{1e-3, 1e-2, 1e-1, 0.5, 1\}
+\end{itemize}
+
+

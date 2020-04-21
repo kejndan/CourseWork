@@ -1,0 +1,188 @@
+
+
+
+
+Для вычисления оптимальных возможных значений гиперпараметров алгоритмов регрессии используется 20 датасетов, таблица с ними будет приведена ниже.
+
+\textbf{ТАБЛИЦА}
+
+Метрикой качества здесь будет являться коэффициент детерминации, или коэффициент $ R^2 $:
+$ R^2 = 1 - \frac{\sum_{i=1}^l(a(x_i)-y_i)^2}{\sum_{i=1}^l(y_i-\overline{y})^2} $
+
+\subsection{Дерево решений (Decision Tree)}
+Рассмотрим для данного алгоритма следующий начальный набор значений:
+\begin{itemize}
+	\item \textit{max\_depth:} [1, 19]
+	\item \textit{min\_samples\_split:} [2, 29]
+	\item \textit{min\_samples\_leaf:} [1, 29]
+\end{itemize}
+Соответственно получая 15 428 возможных комбинаций значений гиперпараметров.
+\begin{figure}
+	\includegraphics{DecisionTreeRegressor}
+	\caption{Начальный набор значений гиперпараметров для алгоритма Decision tree regressor.}
+\end{figure}
+
+После того как мы избавимся от значений гиперпараметров, которые встречаются реже всего или имеют низкий показатель точности, получим следующие:
+\begin{itemize}
+	\item \textit{max\_depth:} [3, 19]
+	\item \textit{min\_samples\_split:} [2, 29]
+	\item \textit{min\_samples\_leaf:} [1, 25]
+\end{itemize}
+\begin{figure}
+	\includegraphics{DecisionTreeRegressor_changed}
+	\caption{Итоговый набор значений гиперпараметров для алгоритма Decision tree regressor.}
+\end{figure}
+Теперь данный алгоритм имеет 11 424 возможных комбинации значений гиперпараметров. 76\% точек осталось.
+
+
+\subsection{Cлучайные и сверхслучайные деревья решения (Random Forest and Extra Trees)}
+Здесь будет рассмотрено сразу два алгоритма Random Forest и Extra Trees, так как это схожие алгоритмы и начальный набор значений гиперпараметров для них был один тот же. 
+Для данных алгоритмов следующий начальный набор значений:
+\begin{itemize}
+	\item \textit{criterion:} \{mse, mae\}
+	\item \textit{n\_estimators:} [90, 110)
+	\item \textit{max\_features:} [0.10, 1.0], с шагом 0.5
+	\item \textit{min\_samples\_split:} [2, 29]
+	\item \textit{min\_samples\_leaf:} [1, 29]
+\end{itemize}
+Соответственно получая 292 789 возможных комбинаций значений гиперпараметров.
+\begin{figure}
+\includegraphics{RandomExtraRegressor}
+\caption{Начальный набор значений гиперпараметров для алгоритмов Random forest regressor и Extra trees regressor.}
+\end{figure}
+
+После того как мы избавимся от значений гиперпараметров, которые встречаются реже всего или имеют низкий показатель точности, получим следующие возможные значения:
+\begin{itemize}
+	\item \textit{criterion:} \{mse\}
+	\item \textit{n\_estimators:} [90, 110)
+	\item \textit{max\_features:} [0.20, 1.0], с шагом 0.5
+	\item \textit{min\_samples\_split:} [2, 16]
+	\item \textit{min\_samples\_leaf:} [1, 22]
+\end{itemize}
+\begin{figure}
+	\includegraphics{RandomExtraRegressor_changed}
+	\caption{Итоговый набор значений гиперпараметров для алгоритмов  Random forest regressor и Extra trees regressor.}
+\end{figure}
+Теперь данные алгоритмы имеют 94 080 возможных комбинации значений гиперпараметров. 58\% точек осталось. 
+
+
+\subsection{Градиентный бустинг (Gradient boosting)}
+Рассмотрим для данного алгоритма следующий начальный набор значений гиперпараметров:
+\begin{itemize}
+	\item \textit{learning\_rate:} \{1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1\}
+	\item \textit{max\_depth:} [1, 19]
+	\item \textit{min\_samples\_split:} [2, 19]
+	\item \textit{min\_samples\_leaf:} [1, 24]
+	\item \textit{subsample:} [0.2, 1.00], с шагом 0.05
+	\item \textit{max\_features:} [0.20, 1.0], с шагом 0.5
+\end{itemize}
+Соответственно получая 13 395 456 возможных комбинаций значений гиперпараметров.
+\begin{figure}
+	\includegraphics{GradientBoostingRegressor}
+	\caption{Начальный набор значений гиперпараметров для алгоритма Gradient Boosting regression.}
+	\label{fig:GradientBoostingRegressor}
+\end{figure}
+	На Рис.\ref{fig:GradientBoostingRegressor} показаны не все точки, это связанно с тем, что имеются выбросы с большими отрицательными значениями.
+
+После того как мы избавимся от значений гиперпараметров, которые встречаются реже всего или имеют низкий показатель точности, получим следующие возможные значения:
+\begin{itemize}
+	\item \textit{learning\_rate:} \{1e-2, 1e-1, 0.5\}
+	\item \textit{max\_depth:} [1, 19]
+	\item \textit{min\_samples\_split:} [2, 19]
+	\item \textit{min\_samples\_leaf:} [1, 24]
+	\item \textit{subsample:} [0.2, 1.00], с шагом 0.05
+	\item \textit{max\_features:} [0.20, 1.0], с шагом 0.5
+\end{itemize}
+\begin{figure}
+	\includegraphics{GradientBoostingRegressor_changed}
+	\caption{Итоговый набор значений гиперпараметров для алгоритма для алгоритма Gradient Boosting regression.}
+\end{figure}
+Теперь данный алгоритм имеет 6 697 728 возможных комбинации значений гиперпараметров. 73\% точек осталось. 
+
+\subsection{XGBoost}
+Рассмотрим для данного алгоритма следующий начальный набор значений гиперпараметров:
+\begin{itemize}
+	\item \textit{max\_depth:} [1, 20]
+	\item \textit{learning\_rate:} \{0.00001, 0.0001, 0.001,0.01, 0.1, 0.5, 1\}
+	\item \textit{subsample:} [0.05, 1.00], с шагом 0.05
+	\item \textit{min\_child\_weight:} [1, 20]
+\end{itemize}
+Соответственно получая 56 000 возможных комбинаций значений гиперпараметров.
+\begin{figure}
+	\includegraphics{XGBoost}
+	\caption{Начальный набор значений гиперпараметров для алгоритма XGBoost regression.}
+\end{figure}
+
+После того как мы избавимся от значений гиперпараметров, которые встречаются реже всего или имеют низкий показатель точности, получим следующие возможные значения:
+\begin{itemize}
+	\item \textit{max\_depth:} [1, 20]
+	\item \textit{learning\_rate:} \{0.01, 0.1, 0.5, 1\}
+	\item \textit{subsample:} [0.2, 1.00], с шагом 0.05
+	\item \textit{min\_child\_weight:} [1, 20]
+\end{itemize}
+\begin{figure}
+	\includegraphics{XGBoost_changed}
+	\caption{Итоговый набор значений гиперпараметров для алгоритма для алгоритма XGBoost regression.}
+\end{figure}
+Теперь данный алгоритм имеет 27 200 возможных комбинации значений гиперпараметров. 74\% точек осталось.\newline
+
+
+Следующие алгоритмы имеют относительно маленькое число возможных значений гиперпараметров, поэтому для них не будет выполняться поиск наиболее оптимальных возможных значений гиперепараметров.
+
+
+\subsection{Метод k-ближайших соседей (k-nearest neighbors)}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{n\_neighbors:} [1, 100]
+	\item \textit{weights:} \{uniform, distance\}
+	\item \textit{p:} \{1, 2\}
+\end{itemize}
+
+\subsection{Метод Лассо с использованием метода наименьших углов  (LassoLarsCV)}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{normalize:} \{True, False\}
+\end{itemize}
+
+\subsection{Эластичная сеть  (ElasticNet)}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{l1\_ratio:} [0, 1], с шагом 0.5
+	\item \textit{tol:} \{1e-5, 1e-4, 1e-3, 1e-2, 1e-1\}
+\end{itemize}
+
+\subsection{AdaBoost}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{learning\_rate:} \{1e-3, 1e-2, 1e-1, 0.5, 1\}
+	\item \textit{loss:} \{linear, square, exponential\}
+\end{itemize}
+
+\subsection{Метод опорных векторов для регрессии  (Support Vector Regression)}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{loss:} \{epsilon\_insensitive, squared\_epsilon\_insensitive\}
+	\item \textit{tol:} \{1e-5, 1e-4, 1e-3, 1e-2, 1e-1\}
+	\item \textit{C:} \{1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1, 5, 10, 15, 20, 25, 50, 70\}
+	\item \textit{epsilon:} \{1e-4, 1e-3, 1e-2, 1e-1, 1\}
+\end{itemize}
+
+\subsection{Стохастический градиентный спуск  (Stochastic Gradient Descent)}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{loss:} \{squared\_loss, huber, epsilon\_insensitive\}
+	\item \textit{penalty:} \{elasticnet\}
+	\item \textit{alpha:} \{0.0, 0.01, 0.001\}
+	\item \textit{learning\_rate:} \{invscaling, constant\}
+	\item \textit{fit\_intercept:} \{True, False\}
+	\item \textit{l1\_ratio:} \{0.25, 0.0, 1.0, 0.75, 0.5\}
+	\item \textit{eta0:} \{0.1, 1.0, 0.01\}
+	\item \textit{power\_t:} \{0.5, 0.0, 1.0, 0.1, 100, 10, 50\}
+\end{itemize}
+
+\subsection{Ридж-регрессия  (Rigde-regression)}
+Набор возможных значений для данного алгоритма является следующим:
+\begin{itemize}
+	\item \textit{alphas:} \{1e-4, 1e-3, 1e-2, 1e-1, 0.5, 1, 5, 10, 15, 20, 25, 50, 70\}
+\end{itemize}
+

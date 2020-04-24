@@ -11,6 +11,7 @@ def entropy_binning(x_data, y_data, n_bins, get_bins=True):
     :param get_bins: if true then return the segments bins, else then return column number
     :return: segments bins/column number
     """
+    x_data, y_data = x_data.flatten(), y_data.flatten()
     merge_data = list(zip(x_data, y_data))  # merge x_data and y_data
     merge_data = sorted(merge_data, key=lambda x: x[0])  # sorted merge_data by x_data
     merge_data = np.array(merge_data).astype(np.float32)
@@ -37,6 +38,7 @@ def quantile_binning(x_data, n_bins, get_bins=True):
     :param get_bins: if true then return the segments bins, else then return column number
     :return: segments bins/column number
     """
+    x_data = x_data.flatten()
     step = 100 / n_bins / 100
     quantiles = np.quantile(x_data, np.arange(0, 1 + .0001, step))
     if get_bins:

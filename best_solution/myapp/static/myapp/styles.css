@@ -81,7 +81,24 @@
   background-color: #1e90ff;
 }
 
+#checkboxes_for_preprocessing {
+    display: none;
+    border: 1px #dadada solid;
+    overflow: auto;
+    height: 200px;
+}
+
+#checkboxes_for_preprocessing label {
+  display: block;
+}
+
+#checkboxes_for_preprocessing label:hover {
+  background-color: #1e90ff;
+}
+
 #type_task {
     float: left;
-    width: 150px;
+}
+#settings {
+    width: 500px;
 }

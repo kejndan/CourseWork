@@ -86,6 +86,7 @@ function showCheckboxes() {
     expanded_check = false;
   }
 }
+
 var expanded_radio = false;
 function showRadiobuttons() {
   var checkboxes = document.getElementById("radiobuttons");
@@ -97,9 +98,27 @@ function showRadiobuttons() {
     expanded_radio = false;
   }
 }
+
+var expanded_checkboxes_for_preprocessing = false;
+function showCheckboxesPreprocessing() {
+  var checkboxes = document.getElementById("checkboxes_for_preprocessing");
+  if (!expanded_checkboxes_for_preprocessing) {
+    checkboxes.style.display = "block";
+    expanded_checkboxes_for_preprocessing = true;
+  } else {
+    checkboxes.style.display = "none";
+    expanded_checkboxes_for_preprocessing = false;
+  }
+}
+
 $(function() {
-$("#check_all").change(function(){
-    console.log('ПИДОРРР')
-    $('.checkbox').prop('checked', $(this).is(':checked'));
+$("#check_all_features").change(function(){
+    $('.checkbox_features').prop('checked', $(this).is(':checked'));
+});
+});
+
+$(function() {
+$("#check_all_preprocessing").change(function(){
+    $('.checkbox_preprocessing').prop('checked', $(this).is(':checked'));
 });
 });

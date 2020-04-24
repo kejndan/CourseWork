@@ -62,10 +62,11 @@
     </div>
     <form action="" method="post">
         {% csrf_token %}
+    <div>
         <div class="multiselect">
             <div class="selectBox" onclick="showCheckboxes()">
                 <select>
-                    <option>Select an option</option>
+                    <option>Select features</option>
                 </select>
                 <div class="overSelect"></div>
             </div>
@@ -82,7 +83,7 @@
         <div class="multiselect">
             <div class="selectBox" onclick="showRadiobuttons()">
             <select>
-                <option>Select an option</option>
+                <option>Select target</option>
             </select>
             <div class="overSelect"></div>
             </div>
@@ -97,6 +98,7 @@
             </div>
         </div>
         <input type="submit" class="btn" value="Change" id="start_btn">
+    </div>
     </form>
     <form action="working" method="post" id="form">
         {% csrf_token %}

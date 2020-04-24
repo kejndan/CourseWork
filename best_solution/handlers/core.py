@@ -36,7 +36,7 @@ def get_solver(class_problems):
 def algorithm_manager(path, filename, class_problems):
     df = pd.read_csv(path + filename)
     with open(path + '\info_algorithm.json') as file:
-        info_data = json.load(file)
+        info_data = json.load(file)['Dataset']
     features = df.copy()
     for number, name in enumerate(info_data.keys()):
         if not info_data[name]:

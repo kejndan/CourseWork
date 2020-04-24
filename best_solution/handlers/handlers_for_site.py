@@ -1,7 +1,4 @@
 from best_solution.settings import MEDIA_ROOT
-from construction_pipeline.genetic_algorithm import GeneticClassification, GeneticRegression
-from sklearn.model_selection import train_test_split
-import pandas as pd
 import os
 import numpy as np
 
@@ -35,11 +32,12 @@ def remove_folder_contents(folder):
             print(e)
 
 
-def prepare_for_json(features_dict, target_dict):
-    output_dict = dict()
-    for name_column in target_dict.keys():
-        if target_dict[name_column]:
-            output_dict[name_column] = 'Target'
-        else:
-            output_dict[name_column] = features_dict[name_column]
+def prepare_for_json(name, *dicts):
+    output_dict = {'Dataset':{}}
+    if name == 'Dataset':
+        for name_column in dicts[0].keys():
+            if dicts[1][name_column]:
+                output_dict[name][name_column] = 'Target'
+            else:
+                output_dict[name][name_column] = dicts[0][name_column]
     return output_dict

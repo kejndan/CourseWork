@@ -1,18 +1,15 @@
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.urls import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
 # Imaginary function to handle an uploaded file.
 from handlers.handlers_for_site import handle_uploaded_file, remove_folder_contents,get_names,prepare_for_json
 from best_solution.settings import MEDIA_ROOT, THREAD
-from threading import Thread
 from multiprocessing import Process
 from handlers.core import algorithm_manager
 import os
 import numpy as np
 import json
-from django.core import serializers
 import shutil
 import pickle
 
@@ -89,7 +86,7 @@ def processing(request):
         status_radio[index_target] = True
         status_radio = dict(zip(names_all_features, status_radio))
         with open(MEDIA_ROOT + '/info_algorithm.json','w') as file:
-            json.dump(prepare_for_json(status_checkboxes, status_radio), file)
+            json.dump(prepare_for_json('Dataset',status_checkboxes, status_radio), file)
         return render(request, 'myapp/processing.html',
                       {'columns_feature' : names_select_features, 'rows_feature' : select_features.to_dict('records'),
                        'column_targets' : name_targets, 'rows_targets' : targets.to_dict('records'),
@@ -106,7 +103,7 @@ def working(request):
             THREAD[0].start()
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
         with open(MEDIA_ROOT + '\info_algorithm.json') as file :
-            info_data = json.load(file)
+            info_data = json.load(file)['Dataset']
         features = df.copy()
         for number, name in enumerate(info_data.keys()) :
             if not info_data[name] :

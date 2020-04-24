@@ -97,3 +97,9 @@ function showRadiobuttons() {
     expanded_radio = false;
   }
 }
+$(function() {
+$("#check_all").change(function(){
+    console.log('ПИДОРРР')
+    $('.checkbox').prop('checked', $(this).is(':checked'));
+});
+});

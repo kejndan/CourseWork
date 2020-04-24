@@ -32,12 +32,16 @@ def remove_folder_contents(folder):
             print(e)
 
 
-def prepare_for_json(name, *dicts):
-    output_dict = {'Dataset':{}}
-    if name == 'Dataset':
-        for name_column in dicts[0].keys():
-            if dicts[1][name_column]:
-                output_dict[name][name_column] = 'Target'
-            else:
-                output_dict[name][name_column] = dicts[0][name_column]
+def prepare_for_json(names, dicts):
+    output_dict = dict()
+    for i, name in enumerate(names):
+        output_dict[name] = {}
+        if name == 'Dataset':
+            for name_column in dicts[i][1].keys():
+                if dicts[i][1][name_column]:
+                    output_dict[name][name_column] = 'Target'
+                else:
+                    output_dict[name][name_column] = dicts[i][0][name_column]
+        elif name == 'Class_problem':
+            output_dict[name] = dicts[i]
     return output_dict

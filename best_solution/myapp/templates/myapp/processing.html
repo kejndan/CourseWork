@@ -97,14 +97,17 @@
                 {% endfor %}
             </div>
         </div>
+        <div id="type_task">
+        <input type="radio" name="type_func" value="regression" checked>Regression
+        <input type="radio" name="type_func" value="classification">Classification
+        <input type="radio" name="type_func" value="clustering">Clustering
+        </div>
         <input type="submit" class="btn" value="Change" id="start_btn">
     </div>
     </form>
     <form action="working" method="post" id="form">
         {% csrf_token %}
-            <input type="radio" name="type_func" value="regression" checked>Regres
-            <input type="radio" name="type_func" value="classification">Class
-            <input type="radio" name="type_func" value="clustering">Clust
+
             <input type="submit" class="btn" value="RUN" id="start_btn">
             <input type="submit" class="btn" value="STOP" id="stop_btn" disabled>
     </form>

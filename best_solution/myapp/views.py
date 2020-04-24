@@ -52,6 +52,10 @@ def processing(request):
                        'column_targets': name_targets, 'rows_targets': targets.to_dict('records'),
                        'status_checkboxes': status_checkboxes, 'status_radio': status_radio})
     elif request.method == 'POST':
+        names_for_json = []
+        data_for_json = []
+        names_for_json.append('Class_problem')
+        data_for_json.append(request.POST.get("type_func"))
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
         index_target = int(request.POST.get('checksradio[]')) - 1
         all_features = df.drop(df.columns[index_target], 1)
@@ -85,8 +89,10 @@ def processing(request):
         status_radio = [False for i in range(len(names_all_features))]
         status_radio[index_target] = True
         status_radio = dict(zip(names_all_features, status_radio))
+        names_for_json.append('Dataset')
+        data_for_json.append((status_checkboxes, status_radio))
         with open(MEDIA_ROOT + '/info_algorithm.json','w') as file:
-            json.dump(prepare_for_json('Dataset',status_checkboxes, status_radio), file)
+            json.dump(prepare_for_json(names_for_json, data_for_json), file)
         return render(request, 'myapp/processing.html',
                       {'columns_feature' : names_select_features, 'rows_feature' : select_features.to_dict('records'),
                        'column_targets' : name_targets, 'rows_targets' : targets.to_dict('records'),
@@ -94,16 +100,19 @@ def processing(request):
 
 def working(request):
     if request.method == 'POST':
+        with open(MEDIA_ROOT + '\info_algorithm.json') as file :
+            data_from_json = json.load(file)
+            info_data = data_from_json['Dataset']
+            class_problem = data_from_json['Class_problem']
         if THREAD[0].is_alive():
             THREAD[0].terminate()
         else:
             if os.path.isfile(MEDIA_ROOT+'\output.txt') :
                 os.remove(MEDIA_ROOT+'\output.txt')
-            THREAD[0] = Process(target=algorithm_manager, args=(MEDIA_ROOT, '\data.csv',request.POST.get("type_func"),))
+            THREAD[0] = Process(target=algorithm_manager, args=(MEDIA_ROOT, '\data.csv', class_problem,))
             THREAD[0].start()
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
-        with open(MEDIA_ROOT + '\info_algorithm.json') as file :
-            info_data = json.load(file)['Dataset']
+
         features = df.copy()
         for number, name in enumerate(info_data.keys()) :
             if not info_data[name] :

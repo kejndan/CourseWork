@@ -6,7 +6,7 @@ from itertools import product
 from matplotlib import pyplot as plt
 import pandas as pd
 from preprocessing_data import feature_select, preprocessing
-
+from skopt import BayesSearchCV
 
 
 def draw_graph(name):
@@ -45,63 +45,70 @@ def draw_graph(name):
     plt.ylim(0,.6)
     plt.show()
 
+def add_list_to_dict(list_params, name,dict_with_params):
+    dict_with_params[name] = dict()
+    for elem in list_params:
+        dict_with_params[name][elem] = 0
+    return dict_with_params
+
 
 if __name__ == '__main__':
-    n_estimators = list(range(100, 101))
-    criterion = np.array(['mse', 'mae'])
-    max_features = list(np.arange(0.3, 0.75, 0.05))
-    min_samples_split = list(range(2, 30))
-    min_samples_leaf = list(range(1, 11))
-    bootstrap = np.array([True, False])
-    # p = np.array([1, 2])
-    all_comb = list(product(criterion, bootstrap, n_estimators, max_features, min_samples_split, min_samples_leaf))
-    print(len(all_comb))
-    names = ['automobile.data', 'boston_data.csv', 'communities.data', 'Daily_Demand_Forecasting_Orders.csv',
-             'dataset_Facebook.csv', 'Fish.csv',
-             'fundamentals.csv', 'house_prices.csv', 'parkinsons.data', 'student-mat.csv',
-             'tracks.csv', 'tracks_plus.csv',
-             'winequality_red.csv', 'winequality_white.csv', 'winequalityN.csv']
-    for part_name in names:
-        name = '/regression/' + part_name
+    dict_with_params = dict()
+    max_features = list(np.arange(0.1, 1.01, 0.05))
+    add_list_to_dict(max_features,'max_features',dict_with_params)
+    min_samples_split = list(np.arange(2,30))
+    add_list_to_dict(min_samples_split, 'min_samples_split',dict_with_params)
+    min_samples_leaf = list(np.arange(1,30))
+    add_list_to_dict(min_samples_leaf, 'min_samples_leaf',dict_with_params)
+    all_comb = list(product(max_features,min_samples_split, min_samples_leaf))
 
-        df = pd.read_csv('../datasets' + name)
+    names = ('max_features','min_samples_split', 'min_samples_leaf')
+    print(len(all_comb))
+    names = ['automobile.data','boston_data.csv','communities.data','Daily_Demand_Forecasting_Orders.csv',
+             'dataset_Facebook.csv','Fish.csv','forestfires.csv','fundamentals.csv','house_prices.csv',
+             'parkinsons.data','student-mat.csv','tracks.csv','tracks_plus.csv','winequality_red.csv',
+             'winequality_white.csv','winequalityN.csv']
+    dist = {'max_features':max_features,'min_samples_split':min_samples_split,'min_samples_leaf':min_samples_leaf}
+
+    for part_name in names :
+        name = '/classification/' + part_name
+        # name = '/regression/diamonds.csv'
+        # batch_comb = random.choices(all_comb, k = int(len(all_comb)*0.1))
+        df = pd.read_csv('/content/drive/My Drive/datasets' + name)
+        print(df.columns)
         # df = df.drop(df.index[26000 :])
         # df = df.drop(df.columns[4],1)
-        pp = preprocessing.PreProcessing(df, -1)
+        pp = PreProcessing(df, -1)
         pp.processing_missing_values()
         pp.one_hot_encoder_categorical_features()
         df = pp.get_dataframe()
+        df = df.astype(float)
+        # df.columns = [str(s) for s in df.columns]
         print(df)
         x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(df.drop(df.columns[-1], 1),
                                                                                     df[df.columns[-1]], test_size=.2,
                                                                                     random_state=35)
         numb = []
         errors = []
-        for i, comb in enumerate(all_comb) :
-            if comb[1] != "distance" or True :
-                if i % 250 == 0 :
-                    print(i)
-                trans = ensemble.RandomForestRegressor(criterion=comb[0], bootstrap=comb[1],n_estimators=comb[2],
-                                                       max_features=comb[3],
-                                                       min_samples_split=comb[4], min_samples_leaf=comb[5])
-                try :
-                    trans.fit(x_train, y_train)
-                    err = sklearn.metrics.r2_score(y_test, trans.predict(x_test))
-                except Exception :
-                    err = np.nan
-                numb.append(i)
-                errors.append(err)
-
-        with open('../results/eval_params_models/RandomForestRegressor.txt', 'a') as f :
-            f.write('\n')
-            f.write(f'{part_name}')
-            f.write(f'{errors}')
-        plt.plot(numb, errors, 'bo', markersize=1)
-        plt.xlabel('Номер коомбинации')
-        plt.ylabel('Точность')
-        plt.title(f'{name[name.rfind("/") + 1 :]}')
-        plt.show()
-    # draw_graph('DecisionTreeRegressor.txt')
-
-
-
+        count = 0
+        trans = XGBRegressor()
+        src = BayesSearchCV(trans, dist, scoring='f1_score', n_jobs=-1)
+        search = src.fit(x_train, y_train)
+        res = dict()
+        count = dict()
+        for i in range(len(search.cv_results_['params'])) :
+            args = (
+                search.cv_results_['params']['max_features'],
+                search.cv_results_['params'][i]['min_samples_split'],
+                search.cv_results_['params'][i]['min_samples_leaf'],
+            )
+            # print(args)
+            val = search.cv_results_['mean_test_score'][i]
+            if all_comb.index(args) not in res :
+                res[all_comb.index(args)] = 0
+                count[all_comb.index(args)] = 0
+            print(i)
+            res[all_comb.index(args)] += val
+            count[all_comb.index(args)] += 1
+        for k in res.keys() :
+            res[k] /= count[k]

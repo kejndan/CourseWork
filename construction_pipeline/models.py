@@ -108,7 +108,7 @@ classification_models = {
 }
 
 regression_models = {
-'sklearn.ensemble.ExtraTreesRegressor': {
+    'sklearn.ensemble.ExtraTreesRegressor': {
         'n_estimators': np.array([100]),
         'max_features': np.arange(0.05, 1.01, 0.05),
         'min_samples_split': np.arange(2, 21),

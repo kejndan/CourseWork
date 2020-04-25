@@ -97,6 +97,21 @@
   background-color: #1e90ff;
 }
 
+#checkboxes_for_handling_outliners {
+    display: none;
+    border: 1px #dadada solid;
+    overflow: auto;
+    height: 200px;
+}
+
+#checkboxes_for_handling_outliners label {
+  display: block;
+}
+
+#checkboxes_for_handling_outliners label:hover {
+  background-color: #1e90ff;
+}
+
 #type_task {
     float: left;
 }

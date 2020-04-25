@@ -101,6 +101,20 @@ function showRadiobuttons() {
   }
 }
 
+var expanded_checkboxes_for_handling_outliners = false;
+function showCheckboxesHandlingOutliners() {
+  var checkboxes = document.getElementById("checkboxes_for_handling_outliners");
+  if ($('#on_handling_outliners').is(':checked')) {
+      if (!expanded_checkboxes_for_handling_outliners) {
+          checkboxes.style.display = "block";
+          expanded_checkboxes_for_handling_outliners = true;
+      } else {
+          checkboxes.style.display = "none";
+          expanded_checkboxes_for_handling_outliners = false;
+      }
+  }
+}
+
 var expanded_checkboxes_for_preprocessing = false;
 function showCheckboxesPreprocessing() {
   var checkboxes = document.getElementById("checkboxes_for_preprocessing");

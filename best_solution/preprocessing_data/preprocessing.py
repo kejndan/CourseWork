@@ -53,36 +53,40 @@ class PreProcessing :
         if features is None :
             features = range(len(self.np_dataset[0]))
         if to == 'auto' :
+            print(self.np_dataset)
             index_no_del_features = []
-            for feature in features :
-                index_missing_values = []
-                index_filled_values = []
-                this_column_categorical = False
-                for sample in range(len(self.np_dataset)) :
-                    if self.np_dataset[sample, feature] in base_null \
-                            or type(self.np_dataset[sample, feature]) != str :
-                        if self.np_dataset[sample, feature] in base_null or np.isnan(self.np_dataset[sample, feature]) :
-                            index_missing_values.append(sample)
+            for feature in range(len(self.np_dataset[0])) :
+                if feature in features:
+                    index_missing_values = []
+                    index_filled_values = []
+                    this_column_categorical = False
+                    for sample in range(len(self.np_dataset)) :
+                        if self.np_dataset[sample, feature] in base_null \
+                                or type(self.np_dataset[sample, feature]) != str :
+                            if self.np_dataset[sample, feature] in base_null or np.isnan(self.np_dataset[sample, feature]) :
+                                index_missing_values.append(sample)
+                            else :
+                                index_filled_values.append(sample)
                         else :
-                            index_filled_values.append(sample)
-                    else :
-                        try :
-                            self.np_dataset[sample, feature] = np.float(self.np_dataset[sample, feature])
-                        except Exception :
-                            this_column_categorical = True
-                        finally :
-                            index_filled_values.append(sample)
-                if 1 - len(index_missing_values) / len(self.np_dataset) > 0.2 :
-                    if len(index_filled_values) != 0 :
-                        if this_column_categorical :
-                            value = mode(self.np_dataset[np.array(index_filled_values), feature])[0][0]
-                        else :
-                            value = self.np_dataset[np.array(index_filled_values), feature].mean()
-                    if len(np.array(index_missing_values)) != 0 :
-                        self.np_dataset[np.array(index_missing_values), feature] = value
-                    index_no_del_features.append(feature)
+                            try :
+                                self.np_dataset[sample, feature] = np.float(self.np_dataset[sample, feature])
+                            except Exception :
+                                this_column_categorical = True
+                            finally :
+                                index_filled_values.append(sample)
+                    if 1 - len(index_missing_values) / len(self.np_dataset) > 0.2 :
+                        if len(index_filled_values) != 0 :
+                            if this_column_categorical :
+                                value = mode(self.np_dataset[np.array(index_filled_values), feature])[0][0]
+                            else :
+                                value = self.np_dataset[np.array(index_filled_values), feature].mean()
+                        if len(np.array(index_missing_values)) != 0 :
+                            self.np_dataset[np.array(index_missing_values), feature] = value
+                        index_no_del_features.append(feature)
+                    else:
+                        print(feature)
                 else:
-                    print(feature)
+                    index_no_del_features.append(feature)
             self.np_dataset = self.np_dataset[:, index_no_del_features]
             if self.target is not None :
                 self.del_nan_from_target()

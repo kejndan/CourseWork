@@ -60,27 +60,46 @@ def processing(request):
         df = pd.read_csv(MEDIA_ROOT + '\data.csv')
         index_target = int(request.POST.get('checksradio[]')) - 1
         all_features = df.drop(df.columns[index_target], 1)
-        targets= df[df.columns[index_target:index_target+1]]
+        targets = df[df.columns[index_target:index_target+1]]
+
         got_status_checkboxes_features = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
         got_status_checkboxes_preprocessing = np.array(request.POST.getlist('checks_preprocessing[]'), dtype=int) - 1
+        got_status_checkboxes_handling_outliners = np.array(request.POST.getlist('checks_handling_outliners[]'), dtype=int) - 1
+
         if np.where(got_status_checkboxes_features == index_target):
             np.delete(got_status_checkboxes_features, np.where(got_status_checkboxes_features == index_target))
         select_features = all_features.copy()
-        for index in range(len(all_features.columns)):
-            if index not in got_status_checkboxes_features:
-                select_features = select_features.drop(all_features.columns[index], 1)
+        preprocessor = preprocessing.PreProcessing(pd.concat([all_features, targets], axis=1), -1)
         if 'on_processing_missing' in request.POST:
-            preprocessor = preprocessing.PreProcessing(pd.concat([all_features, targets], axis=1), -1)
             if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_preprocessing):
                 checks_feature_preprocessing = []
                 for i in range(len(got_status_checkboxes_preprocessing)):
                     if got_status_checkboxes_preprocessing[i] in got_status_checkboxes_features:
-                        checks_feature_preprocessing.append(got_status_checkboxes_features[i])
+                        checks_feature_preprocessing.append(got_status_checkboxes_preprocessing[i])
                 got_status_checkboxes_preprocessing = np.array(checks_feature_preprocessing)
             preprocessor.processing_missing_values(features=got_status_checkboxes_preprocessing)
-            df1 = preprocessor.get_dataframe()
-            select_features = df1.drop(df1.columns[-1], 1)
-            targets = df1[df1.columns[-1:]]
+            changed_df = preprocessor.get_dataframe()
+            changed_df.columns = df.columns
+            select_features = changed_df.drop(changed_df.columns[-1], 1)
+            targets = changed_df[changed_df.columns[-1:]]
+
+        if 'on_handling_outliners' in request.POST:
+            if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_handling_outliners):
+                checks_feature_handling_outliners = []
+                for i in range(len(got_status_checkboxes_handling_outliners)):
+                    if got_status_checkboxes_handling_outliners[i] in got_status_checkboxes_features:
+                        checks_feature_handling_outliners.append(got_status_checkboxes_handling_outliners[i])
+                got_status_checkboxes_handling_outliners = np.array(checks_feature_handling_outliners)
+            preprocessor.handling_outliners(features=got_status_checkboxes_handling_outliners)
+
+            changed_df = preprocessor.get_dataframe()
+            changed_df.columns = df.columns
+            select_features = changed_df.drop(changed_df.columns[-1], 1)
+            targets = changed_df[changed_df.columns[-1:]]
+        for index in range(len(all_features.columns)):
+            if index not in got_status_checkboxes_features:
+                select_features = select_features.drop(all_features.columns[index], 1)
+
         try:
             names_all_features = np.array(df.columns, dtype=float)
             names_all_features = get_names(len(names_all_features))

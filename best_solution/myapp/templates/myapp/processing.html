@@ -66,6 +66,7 @@
     <div id="settings">
         <table border="1" width="100%" cellpadding="5">
             <tr><td colspan="2" align="center">Selects working columns</td></tr>
+{#            Select features#}
             <tr>
                 <td align="center">Select features <div class="multiselect">
                 <div class="selectBox" onclick="showCheckboxes()">
@@ -75,7 +76,7 @@
                     <div class="overSelect"></div>
                 </div>
                 <div id="checkboxes">
-                    <label><input type="checkbox" id="check_all_features"> Select all</label>
+                    <label><input type="checkbox" id="check_all_features" checked> Select all</label>
                     {% for col, val in status_checkboxes.items %}
                     <label>
                             <input type="checkbox" class="checkbox_features" name="checks[]" value="{{ forloop.counter }}"
@@ -102,16 +103,19 @@
                     {% endfor %}
                 </div>
             </div></td>
-
             </tr>
+{#            Select targets#}
             <tr>
                     <td align="center"><input type="radio" name="type_func" value="regression" checked>Regression</td>
                     <td align="center"><input type="radio" name="type_func" value="classification">Classification</td>
             </tr>
+
+            <tr><td colspan="2" align="center">Advanced settings</td></tr>
+{#            Processing missing values#}
             <tr>
                 <td align="center">
                     <label>Processing missing<input type="checkbox" id="on_processing_missing"
-                    name="on_processing_missing"></label>
+                    name="on_processing_missing" checked></label>
 
                 </td>
                 <td align="center"><div class="multiselect">
@@ -122,7 +126,7 @@
                         <div class="overSelect"></div>
                     </div>
                     <div id="checkboxes_for_preprocessing">
-                        <label><input type="checkbox" id="check_all_preprocessing"> Select all</label>
+                        <label><input type="checkbox" id="check_all_preprocessing" checked> Select all</label>
                         {% for col, val in status_checkboxes.items %}
                         <label>
                                 <input type="checkbox" class="checkbox_preprocessing" name="checks_preprocessing[]"
@@ -134,6 +138,35 @@
                     </div>
                     </div></td>
             </tr>
+{#            Handling outliners#}
+            <tr>
+                <td align="center">
+                    <label>Handling outliners<input type="checkbox" id="on_handling_outliners"
+                    name="on_handling_outliners" checked></label>
+
+                </td>
+                <td align="center"><div class="multiselect">
+                    <div class="selectBox" onclick="showCheckboxesHandlingOutliners()">
+                        <select>
+                            <option>Select features</option>
+                        </select>
+                        <div class="overSelect"></div>
+                    </div>
+                    <div id="checkboxes_for_handling_outliners">
+                        <label><input type="checkbox" id="check_all_handling_outliners" checked> Select all</label>
+                        {% for col, val in status_checkboxes.items %}
+                        <label>
+                                <input type="checkbox" class="checkbox_handling_outliners"
+                                       name="checks_handling_outliners[]"
+                                       value="{{ forloop.counter }}"
+                                    {%if val %}checked="checked"{% endif %}/>
+                                {{col}}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    </div></td>
+            </tr>
+
             <tr><td colspan="2" align="center"><input type="submit" class="btn" value="Change" id="start_btn"></td></tr>
 
         </table>

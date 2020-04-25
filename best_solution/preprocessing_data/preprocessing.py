@@ -208,7 +208,7 @@ class PreProcessing :
                 self.np_dataset[:, feature] = binning.quantile_binning(self.np_dataset[:, feature], n_bins, False) \
                     .astype(str)
 
-            return self.np_dataset
+        return self.np_dataset
 
     def transform(self, type_transform='log', arg=10, features=None) :
         """
@@ -229,7 +229,7 @@ class PreProcessing :
                     self.np_dataset[:, feature] = to_log(self.np_dataset[:, feature], arg)
                 elif type_transform == 'box-cox' :
                     self.np_dataset[:, feature] = to_box_cox(self.np_dataset[:, feature], arg)
-            return self.np_dataset
+        return self.np_dataset
 
     def scaling(self, type_scale='norm', features=None) :
         """

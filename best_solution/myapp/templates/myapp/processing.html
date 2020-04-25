@@ -166,6 +166,33 @@
                     </div>
                     </div></td>
             </tr>
+{#            binning#}
+            <tr>
+                <td align="center">
+                    <label>Binning<input type="checkbox" id="on_binning"
+                    name="on_binning" checked></label>
+                </td>
+                <td align="center"><div class="multiselect">
+                    <label>Number bins <input type="number" name="bins" value="3" min="2" max="10" step="1"></label>
+                    <div class="selectBox" onclick="showCheckboxesBinning()">
+                        <select>
+                            <option>Select features</option>
+                        </select>
+                        <div class="overSelect"></div>
+                    </div>
+                    <div id="checkboxes_for_binning">
+                        <label><input type="checkbox" id="check_all_binning" checked> Select all</label>
+                        {% for col, val in status_checkboxes.items %}
+                        <label>
+                                <input type="checkbox" class="checkbox_binning" name="checks_binning[]"
+                                       value="{{ forloop.counter }}"
+                                    {%if val %}checked="checked"{% endif %}/>
+                                {{col}}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    </div></td>
+            </tr>
 
             <tr><td colspan="2" align="center"><input type="submit" class="btn" value="Change" id="start_btn"></td></tr>
 

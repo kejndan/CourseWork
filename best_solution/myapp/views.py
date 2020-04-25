@@ -65,6 +65,7 @@ def processing(request):
         got_status_checkboxes_features = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
         got_status_checkboxes_preprocessing = np.array(request.POST.getlist('checks_preprocessing[]'), dtype=int) - 1
         got_status_checkboxes_handling_outliners = np.array(request.POST.getlist('checks_handling_outliners[]'), dtype=int) - 1
+        got_status_checkboxes_binning = np.array(request.POST.getlist('checks_binning[]'), dtype=int) - 1
 
         if np.where(got_status_checkboxes_features == index_target):
             np.delete(got_status_checkboxes_features, np.where(got_status_checkboxes_features == index_target))
@@ -91,6 +92,16 @@ def processing(request):
                         checks_feature_handling_outliners.append(got_status_checkboxes_handling_outliners[i])
                 got_status_checkboxes_handling_outliners = np.array(checks_feature_handling_outliners)
             preprocessor.handling_outliners(features=got_status_checkboxes_handling_outliners)
+
+        if 'on_binning' in request.POST :
+            if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_binning) :
+                checks_feature_binning = []
+                for i in range(len(got_status_checkboxes_binning)) :
+                    if got_status_checkboxes_binning[i] in got_status_checkboxes_features :
+                        checks_feature_binning.append(got_status_checkboxes_binning[i])
+                got_status_checkboxes_binning = np.array(checks_feature_binning)
+
+            preprocessor.binning(int(request.POST['bins']), features=got_status_checkboxes_binning)
 
             changed_df = preprocessor.get_dataframe()
             changed_df.columns = df.columns

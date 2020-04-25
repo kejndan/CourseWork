@@ -100,6 +100,19 @@ function showRadiobuttons() {
     expanded_radio = false;
   }
 }
+var expanded_checkboxes_for_preprocessing = false;
+function showCheckboxesPreprocessing() {
+  var checkboxes = document.getElementById("checkboxes_for_preprocessing");
+  if ($('#on_binning').is(':checked')) {
+      if (!expanded_checkboxes_for_preprocessing) {
+          checkboxes.style.display = "block";
+          expanded_checkboxes_for_preprocessing = true;
+      } else {
+          checkboxes.style.display = "none";
+          expanded_checkboxes_for_preprocessing = false;
+      }
+  }
+}
 
 var expanded_checkboxes_for_handling_outliners = false;
 function showCheckboxesHandlingOutliners() {
@@ -115,16 +128,16 @@ function showCheckboxesHandlingOutliners() {
   }
 }
 
-var expanded_checkboxes_for_preprocessing = false;
-function showCheckboxesPreprocessing() {
-  var checkboxes = document.getElementById("checkboxes_for_preprocessing");
-  if ($('#on_processing_missing').is(':checked')) {
-      if (!expanded_checkboxes_for_preprocessing) {
+var expanded_checkboxes_for_binning = false;
+function showCheckboxesBinning() {
+  var checkboxes = document.getElementById("checkboxes_for_binning");
+  if ($('#on_binning').is(':checked')) {
+      if (!expanded_checkboxes_for_binning) {
           checkboxes.style.display = "block";
-          expanded_checkboxes_for_preprocessing = true;
+          expanded_checkboxes_for_binning = true;
       } else {
           checkboxes.style.display = "none";
-          expanded_checkboxes_for_preprocessing = false;
+          expanded_checkboxes_for_binning = false;
       }
   }
 }
@@ -138,5 +151,11 @@ $("#check_all_features").change(function(){
 $(function() {
 $("#check_all_preprocessing").change(function(){
     $('.checkbox_preprocessing').prop('checked', $(this).is(':checked'));
+});
+});
+
+$(function() {
+$("#check_all_binning").change(function(){
+    $('.checkbox_binning').prop('checked', $(this).is(':checked'));
 });
 });

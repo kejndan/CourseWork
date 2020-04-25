@@ -112,6 +112,23 @@
   background-color: #1e90ff;
 }
 
+
+
+#checkboxes_for_binning {
+    display: none;
+    border: 1px #dadada solid;
+    overflow: auto;
+    height: 200px;
+}
+
+#checkboxes_for_binning label {
+  display: block;
+}
+
+#checkboxes_for_binning label:hover {
+  background-color: #1e90ff;
+}
+
 #type_task {
     float: left;
 }

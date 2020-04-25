@@ -118,7 +118,8 @@
                     <label><input type="checkbox" id="check_all_preprocessing"> Select all</label>
                     {% for col, val in status_checkboxes.items %}
                     <label>
-                            <input type="checkbox" class="checkbox_preprocessing" name="checks[]" value="{{ forloop.counter }}"
+                            <input type="checkbox" class="checkbox_preprocessing" name="checks_preprocessing[]"
+                                   value="{{ forloop.counter }}"
                                 {%if val %}checked="checked"{% endif %}/>
                             {{col}}
                     </label>

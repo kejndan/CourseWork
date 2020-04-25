@@ -12,6 +12,7 @@ import numpy as np
 import json
 import shutil
 import pickle
+from preprocessing_data import preprocessing
 
 
 def upload_file(request):
@@ -60,20 +61,34 @@ def processing(request):
         index_target = int(request.POST.get('checksradio[]')) - 1
         all_features = df.drop(df.columns[index_target], 1)
         targets= df[df.columns[index_target:index_target+1]]
-        got_status_checkboxes = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
-        if np.where(got_status_checkboxes == index_target):
-            np.delete(got_status_checkboxes, np.where(got_status_checkboxes == index_target))
+        got_status_checkboxes_features = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
+        got_status_checkboxes_preprocessing = np.array(request.POST.getlist('checks_preprocessing[]'), dtype=int) - 1
+        if np.where(got_status_checkboxes_features == index_target):
+            np.delete(got_status_checkboxes_features, np.where(got_status_checkboxes_features == index_target))
         select_features = all_features.copy()
         for index in range(len(all_features.columns)):
-            if index not in got_status_checkboxes:
+            if index not in got_status_checkboxes_features:
                 select_features = select_features.drop(all_features.columns[index], 1)
+        if len(got_status_checkboxes_preprocessing):
+            preprocessor = preprocessing.PreProcessing(pd.concat([all_features, targets], axis=1), -1)
+            if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_preprocessing):
+                checks_feature_preprocessing = []
+                for i in range(len(got_status_checkboxes_preprocessing)):
+                    if got_status_checkboxes_preprocessing[i] in got_status_checkboxes_features:
+                        checks_feature_preprocessing.append(got_status_checkboxes_features[i])
+                got_status_checkboxes_preprocessing = np.array(checks_feature_preprocessing)
+            preprocessor.processing_missing_values(features=got_status_checkboxes_preprocessing)
+            df1 = preprocessor.get_dataframe()
+            select_features = df1.drop(df1.columns[-1], 1)
+            targets = df1[df1.columns[-1:]]
+            print('lo')
         try:
             names_all_features = np.array(df.columns, dtype=float)
             names_all_features = get_names(len(names_all_features))
             names_features = np.array(all_features.columns, dtype=float)
             names_features = get_names(len(names_features))
             names_select_features = np.array(select_features.columns, dtype=float)
-            names_select_features = get_names(len(names_select_features), got_status_checkboxes)
+            names_select_features = get_names(len(names_select_features), got_status_checkboxes_features)
             name_targets = ['Target']
         except ValueError as e:
             print(e)
@@ -83,7 +98,7 @@ def processing(request):
             name_targets = targets.columns
 
         status_checkboxes = [False for i in range(len(names_features))]
-        for number in got_status_checkboxes:
+        for number in got_status_checkboxes_features:
             status_checkboxes[number] = True
         status_checkboxes = dict(zip(names_features, status_checkboxes))
         status_radio = [False for i in range(len(names_all_features))]
@@ -178,12 +193,12 @@ def prepared(request):
     elif request.method == 'POST':
         if 'Change' in request.POST:
             df = pd.read_csv(MEDIA_ROOT + '\data.csv')
-            got_status_checkboxes = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
-            print(got_status_checkboxes)
+            got_status_checkboxes_features = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
+            print(got_status_checkboxes_features)
             all_features = df.copy()
             select_features = all_features.copy()
             for index in range(len(all_features.columns)) :
-                if index not in got_status_checkboxes :
+                if index not in got_status_checkboxes_features :
                     select_features = select_features.drop(all_features.columns[index], 1)
             try:
                 names_all_features = np.array(df.columns, dtype=float)
@@ -191,14 +206,14 @@ def prepared(request):
                 names_features = np.array(all_features.columns, dtype=float)
                 names_features = get_names(len(names_features))
                 names_select_features = np.array(select_features.columns, dtype=float)
-                names_select_features = get_names(len(names_select_features), got_status_checkboxes)
+                names_select_features = get_names(len(names_select_features), got_status_checkboxes_features)
             except ValueError as e :
                 print(e)
                 names_all_features = df.columns
                 names_features = all_features.columns
                 names_select_features = select_features.columns
             status_checkboxes = [False for i in range(len(names_all_features))]
-            for number in got_status_checkboxes :
+            for number in got_status_checkboxes_features :
                 status_checkboxes[number] = True
             status_checkboxes = dict(zip(names_all_features, status_checkboxes))
             return render(request, 'myapp/prepared.html',
@@ -207,12 +222,12 @@ def prepared(request):
                            'status_checkboxes' : status_checkboxes})
         elif 'RUN' in request.POST:
             df = pd.read_csv(MEDIA_ROOT + '\data.csv')
-            got_status_checkboxes = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
-            print(got_status_checkboxes)
+            got_status_checkboxes_features = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
+            print(got_status_checkboxes_features)
             all_features = df.copy()
             select_features = all_features.copy()
             for index in range(len(all_features.columns)) :
-                if index not in got_status_checkboxes :
+                if index not in got_status_checkboxes_features :
                     select_features = select_features.drop(all_features.columns[index], 1)
             try :
                 names_all_features = np.array(df.columns, dtype=float)
@@ -220,14 +235,14 @@ def prepared(request):
                 names_features = np.array(all_features.columns, dtype=float)
                 names_features = get_names(len(names_features))
                 names_select_features = np.array(select_features.columns, dtype=float)
-                names_select_features = get_names(len(names_select_features), got_status_checkboxes)
+                names_select_features = get_names(len(names_select_features), got_status_checkboxes_features)
             except ValueError as e :
                 print(e)
                 names_all_features = df.columns
                 names_features = all_features.columns
                 names_select_features = select_features.columns
             status_checkboxes = [False for i in range(len(names_all_features))]
-            for number in got_status_checkboxes :
+            for number in got_status_checkboxes_features :
                 status_checkboxes[number] = True
             status_checkboxes = dict(zip(names_all_features, status_checkboxes))
             pipeline = pickle.load(open(MEDIA_ROOT + '\\pipeline.pkl', 'rb'))

@@ -79,9 +79,11 @@ var expanded_check = false;
 function showCheckboxes() {
   var checkboxes = document.getElementById("checkboxes");
   if (!expanded_check) {
+      console.log('block');
     checkboxes.style.display = "block";
     expanded_check = true;
   } else {
+      console.log('none');
     checkboxes.style.display = "none";
     expanded_check = false;
   }
@@ -102,12 +104,14 @@ function showRadiobuttons() {
 var expanded_checkboxes_for_preprocessing = false;
 function showCheckboxesPreprocessing() {
   var checkboxes = document.getElementById("checkboxes_for_preprocessing");
-  if (!expanded_checkboxes_for_preprocessing) {
-    checkboxes.style.display = "block";
-    expanded_checkboxes_for_preprocessing = true;
-  } else {
-    checkboxes.style.display = "none";
-    expanded_checkboxes_for_preprocessing = false;
+  if ($('#on_processing_missing').is(':checked')) {
+      if (!expanded_checkboxes_for_preprocessing) {
+          checkboxes.style.display = "block";
+          expanded_checkboxes_for_preprocessing = true;
+      } else {
+          checkboxes.style.display = "none";
+          expanded_checkboxes_for_preprocessing = false;
+      }
   }
 }
 

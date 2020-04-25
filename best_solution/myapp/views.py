@@ -69,7 +69,7 @@ def processing(request):
         for index in range(len(all_features.columns)):
             if index not in got_status_checkboxes_features:
                 select_features = select_features.drop(all_features.columns[index], 1)
-        if len(got_status_checkboxes_preprocessing):
+        if 'on_processing_missing' in request.POST:
             preprocessor = preprocessing.PreProcessing(pd.concat([all_features, targets], axis=1), -1)
             if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_preprocessing):
                 checks_feature_preprocessing = []

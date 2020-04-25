@@ -7,7 +7,6 @@ def to_log(data, arg=10, only_positive=False):
     if only_positive:
         return np.log10(data)/np.log10(arg)
     else:
-        print(data+1)
         return np.log10(data+1)/np.log10(arg)
 
 

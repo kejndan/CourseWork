@@ -142,6 +142,20 @@ function showCheckboxesBinning() {
   }
 }
 
+var expanded_checkboxes_for_transform = false;
+function showCheckboxesTransform() {
+  var checkboxes = document.getElementById("checkboxes_for_transform");
+  if ($('#on_transform').is(':checked')) {
+      if (!expanded_checkboxes_for_transform) {
+          checkboxes.style.display = "block";
+          expanded_checkboxes_for_transform = true;
+      } else {
+          checkboxes.style.display = "none";
+          expanded_checkboxes_for_transform = false;
+      }
+  }
+}
+
 $(function() {
 $("#check_all_features").change(function(){
     $('.checkbox_features').prop('checked', $(this).is(':checked'));
@@ -155,7 +169,19 @@ $("#check_all_preprocessing").change(function(){
 });
 
 $(function() {
+$("#check_all_handling_outliners").change(function(){
+    $('.checkbox_handling_outliners').prop('checked', $(this).is(':checked'));
+});
+});
+
+$(function() {
 $("#check_all_binning").change(function(){
     $('.checkbox_binning').prop('checked', $(this).is(':checked'));
+});
+});
+
+$(function() {
+$("#check_all_transform").change(function(){
+    $('.checkbox_transform').prop('checked', $(this).is(':checked'));
 });
 });

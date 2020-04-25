@@ -66,6 +66,7 @@ def processing(request):
         got_status_checkboxes_preprocessing = np.array(request.POST.getlist('checks_preprocessing[]'), dtype=int) - 1
         got_status_checkboxes_handling_outliners = np.array(request.POST.getlist('checks_handling_outliners[]'), dtype=int) - 1
         got_status_checkboxes_binning = np.array(request.POST.getlist('checks_binning[]'), dtype=int) - 1
+        got_status_checkboxes_transform = np.array(request.POST.getlist('checks_transform[]'), dtype=int) - 1
 
         if np.where(got_status_checkboxes_features == index_target):
             np.delete(got_status_checkboxes_features, np.where(got_status_checkboxes_features == index_target))
@@ -100,8 +101,22 @@ def processing(request):
                     if got_status_checkboxes_binning[i] in got_status_checkboxes_features :
                         checks_feature_binning.append(got_status_checkboxes_binning[i])
                 got_status_checkboxes_binning = np.array(checks_feature_binning)
-
             preprocessor.binning(int(request.POST['bins']), features=got_status_checkboxes_binning)
+
+        if 'on_transform' in request.POST :
+            if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_transform) :
+                checks_feature_transform = []
+                for i in range(len(got_status_checkboxes_transform)) :
+                    if got_status_checkboxes_transform[i] in got_status_checkboxes_features :
+                        checks_feature_transform.append(got_status_checkboxes_transform[i])
+                got_status_checkboxes_transform = np.array(checks_feature_transform)
+            type_transform = request.POST['type_transform']
+            print(type_transform)
+            if type_transform == 'To Logarithm':
+                type_transform = 'log'
+            elif type_transform == 'To box-cox':
+                type_transform = 'box-cox'
+            preprocessor.transform(type_transform, features=got_status_checkboxes_transform)
 
             changed_df = preprocessor.get_dataframe()
             changed_df.columns = df.columns

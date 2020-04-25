@@ -32,7 +32,7 @@
 }
 .multiselect {
     width: 200px;
-    float: left;
+    /*float: left;*/
 }
 
 .selectBox {
@@ -126,6 +126,21 @@
 }
 
 #checkboxes_for_binning label:hover {
+  background-color: #1e90ff;
+}
+
+#checkboxes_for_transform {
+    display: none;
+    border: 1px #dadada solid;
+    overflow: auto;
+    height: 200px;
+}
+
+#checkboxes_for_transform label {
+  display: block;
+}
+
+#checkboxes_for_transform label:hover {
   background-color: #1e90ff;
 }
 

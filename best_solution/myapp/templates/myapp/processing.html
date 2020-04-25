@@ -64,71 +64,75 @@
         {% csrf_token %}
 
     <div id="settings">
-        <div class="multiselect">
-            <div class="selectBox" onclick="showCheckboxes()">
-                <select>
-                    <option>Select features</option>
-                </select>
-                <div class="overSelect"></div>
-            </div>
-            <div id="checkboxes">
-                <label><input type="checkbox" id="check_all_features"> Select all</label>
-                {% for col, val in status_checkboxes.items %}
-                <label>
-                        <input type="checkbox" class="checkbox_features" name="checks[]" value="{{ forloop.counter }}"
-                            {%if val %}checked="checked"{% endif %}/>
-                        {{col}}
-                </label>
-                {% endfor %}
-            </div>
-        </div>
-        <div class="multiselect">
-            <div class="selectBox" onclick="showRadiobuttons()">
-            <select>
-                <option>Select target</option>
-            </select>
-            <div class="overSelect"></div>
-            </div>
-            <div id="radiobuttons">
-                {% for col, val in status_radio.items %}
-                <label>
-                        <input type="radio" name="checksradio[]" value="{{ forloop.counter }}"
-                                {%if val %}checked="checked"{% endif %}/>
-                        {{col}}
-                </label>
-                {% endfor %}
-            </div>
-        </div>
-        <div id="type_task">
-                <input type="radio" name="type_func" value="regression" checked>Regression
-                <input type="radio" name="type_func" value="classification">Classification
-                <input type="radio" name="type_func" value="clustering">Clustering
-        </div>
-        <div id="preprocessing">
-            <p>
-                Processing missing
-                <div class="multiselect">
-                <div class="selectBox" onclick="showCheckboxesPreprocessing()">
+        <table border="1" width="100%" cellpadding="5">
+            <tr><td colspan="2" align="center">Selects working columns</td></tr>
+            <tr>
+                <td align="center">Select features <div class="multiselect">
+                <div class="selectBox" onclick="showCheckboxes()">
                     <select>
                         <option>Select features</option>
                     </select>
                     <div class="overSelect"></div>
                 </div>
-                <div id="checkboxes_for_preprocessing">
-                    <label><input type="checkbox" id="check_all_preprocessing"> Select all</label>
+                <div id="checkboxes">
+                    <label><input type="checkbox" id="check_all_features"> Select all</label>
                     {% for col, val in status_checkboxes.items %}
                     <label>
-                            <input type="checkbox" class="checkbox_preprocessing" name="checks_preprocessing[]"
-                                   value="{{ forloop.counter }}"
+                            <input type="checkbox" class="checkbox_features" name="checks[]" value="{{ forloop.counter }}"
                                 {%if val %}checked="checked"{% endif %}/>
                             {{col}}
                     </label>
                     {% endfor %}
                 </div>
+            </div></td>
+                <td align="center">Select predicted column <div class="multiselect">
+                <div class="selectBox" onclick="showRadiobuttons()">
+                <select>
+                    <option>Select target</option>
+                </select>
+                <div class="overSelect"></div>
                 </div>
-            </p>
-        </div>
-        <input type="submit" class="btn" value="Change" id="start_btn">
+                <div id="radiobuttons">
+                    {% for col, val in status_radio.items %}
+                    <label>
+                            <input type="radio" name="checksradio[]" value="{{ forloop.counter }}"
+                                    {%if val %}checked="checked"{% endif %}/>
+                            {{col}}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div></td>
+
+            </tr>
+            <tr>
+                    <td align="center"><input type="radio" name="type_func" value="regression" checked>Regression</td>
+                    <td align="center"><input type="radio" name="type_func" value="classification">Classification</td>
+            </tr>
+            <tr>
+                <td align="center">Processing missing</td>
+                <td align="center"><div class="multiselect">
+                    <div class="selectBox" onclick="showCheckboxesPreprocessing()">
+                        <select>
+                            <option>Select features</option>
+                        </select>
+                        <div class="overSelect"></div>
+                    </div>
+                    <div id="checkboxes_for_preprocessing">
+                        <label><input type="checkbox" id="check_all_preprocessing"> Select all</label>
+                        {% for col, val in status_checkboxes.items %}
+                        <label>
+                                <input type="checkbox" class="checkbox_preprocessing" name="checks_preprocessing[]"
+                                       value="{{ forloop.counter }}"
+                                    {%if val %}checked="checked"{% endif %}/>
+                                {{col}}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    </div></td>
+            </tr>
+            <tr><td colspan="2" align="center"><input type="submit" class="btn" value="Change" id="start_btn"></td></tr>
+
+        </table>
     </div>
     </form>
     <form action="working" method="post" id="form">

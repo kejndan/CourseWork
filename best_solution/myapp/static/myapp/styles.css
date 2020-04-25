@@ -8,6 +8,7 @@
     width:500px;
     height:500px;
     background-color: red;
+    float: left;
     overflow: auto;
     /*float: left;*/
 }
@@ -101,4 +102,10 @@
 }
 #settings {
     width: 500px;
+    float: left;
+}
+
+#processing_missing_values {
+    width: 300px;
+    float: left;
 }

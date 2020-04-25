@@ -81,7 +81,6 @@ def processing(request):
             df1 = preprocessor.get_dataframe()
             select_features = df1.drop(df1.columns[-1], 1)
             targets = df1[df1.columns[-1:]]
-            print('lo')
         try:
             names_all_features = np.array(df.columns, dtype=float)
             names_all_features = get_names(len(names_all_features))

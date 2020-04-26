@@ -156,6 +156,21 @@ function showCheckboxesTransform() {
   }
 }
 
+
+var expanded_checkboxes_for_scaling = false;
+function showCheckboxesScaling() {
+  var checkboxes = document.getElementById("checkboxes_for_scaling");
+  if ($('#on_scaling').is(':checked')) {
+      if (!expanded_checkboxes_for_scaling) {
+          checkboxes.style.display = "block";
+          expanded_checkboxes_for_scaling = true;
+      } else {
+          checkboxes.style.display = "none";
+          expanded_checkboxes_for_scaling = false;
+      }
+  }
+}
+
 $(function() {
 $("#check_all_features").change(function(){
     $('.checkbox_features').prop('checked', $(this).is(':checked'));
@@ -183,5 +198,11 @@ $("#check_all_binning").change(function(){
 $(function() {
 $("#check_all_transform").change(function(){
     $('.checkbox_transform').prop('checked', $(this).is(':checked'));
+});
+});
+
+$(function() {
+$("#check_all_scaling").change(function(){
+    $('.checkbox_scaling').prop('checked', $(this).is(':checked'));
 });
 });

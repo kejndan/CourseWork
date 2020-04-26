@@ -67,6 +67,8 @@ def processing(request):
         got_status_checkboxes_handling_outliners = np.array(request.POST.getlist('checks_handling_outliners[]'), dtype=int) - 1
         got_status_checkboxes_binning = np.array(request.POST.getlist('checks_binning[]'), dtype=int) - 1
         got_status_checkboxes_transform = np.array(request.POST.getlist('checks_transform[]'), dtype=int) - 1
+        got_status_checkboxes_scaling = np.array(request.POST.getlist('checks_scaling[]'), dtype=int) - 1
+
 
         if np.where(got_status_checkboxes_features == index_target):
             np.delete(got_status_checkboxes_features, np.where(got_status_checkboxes_features == index_target))
@@ -111,12 +113,27 @@ def processing(request):
                         checks_feature_transform.append(got_status_checkboxes_transform[i])
                 got_status_checkboxes_transform = np.array(checks_feature_transform)
             type_transform = request.POST['type_transform']
-            print(type_transform)
             if type_transform == 'To Logarithm':
                 type_transform = 'log'
             elif type_transform == 'To box-cox':
                 type_transform = 'box-cox'
             preprocessor.transform(type_transform, features=got_status_checkboxes_transform)
+
+        if 'on_scaling' in request.POST :
+            if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_scaling) :
+                checks_feature_scaling = []
+                for i in range(len(got_status_checkboxes_scaling)) :
+                    if got_status_checkboxes_scaling[i] in got_status_checkboxes_features :
+                        checks_feature_scaling.append(got_status_checkboxes_scaling[i])
+                got_status_checkboxes_scaling = np.array(checks_feature_scaling)
+            type_scaling = request.POST['type_scaling']
+            if type_scaling == 'Normalization' :
+                type_scaling = 'norm'
+            elif type_scaling == 'Standardization' :
+                type_scaling = 'stand'
+            elif type_scaling == 'l2-normalization' :
+                type_scaling = 'l2-norm'
+            preprocessor.scaling(type_scaling, features=got_status_checkboxes_scaling)
 
             changed_df = preprocessor.get_dataframe()
             changed_df.columns = df.columns

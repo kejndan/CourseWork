@@ -252,7 +252,7 @@ class PreProcessing :
                     self.np_dataset[:, feature] = scaling.standardization(self.np_dataset[:, feature])
                 elif type_scale == 'l2-norm' :
                     self.np_dataset[:, feature] = scaling.l2_normalized(self.np_dataset[:, feature])
-            return self.np_dataset
+        return self.np_dataset
 
     def one_hot_check(self) :
         """

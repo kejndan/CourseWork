@@ -226,6 +226,38 @@
                     </select>
                 </td>
             </tr>
+{#            scaling#}
+            <tr>
+                <td align="center">
+                    <label>Scaling<input type="checkbox" id="on_scaling"
+                    name="on_scaling" checked></label>
+
+                </td>
+                <td align="center"><div class="multiselect">
+                    <div class="selectBox" onclick="showCheckboxesScaling()">
+                        <select>
+                            <option>Select features</option>
+                        </select>
+                        <div class="overSelect"></div>
+                    </div>
+                    <div id="checkboxes_for_scaling">
+                        <label><input type="checkbox" id="check_all_scaling" checked> Select all</label>
+                        {% for col, val in status_checkboxes.items %}
+                        <label>
+                                <input type="checkbox" class="checkbox_scaling" name="checks_scaling[]"
+                                       value="{{ forloop.counter }}"
+                                    {%if val %}checked="checked"{% endif %}/>
+                                {{col}}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <select name="type_scaling">
+                        <option>Normalization</option>
+                        <option>Standardization</option>
+                        <option>l2-normalization</option>
+                    </select>
+                    </div></td>
+            </tr>
             <tr><td colspan="2" align="center"><input type="submit" class="btn" value="Change" id="start_btn"></td></tr>
 
         </table>

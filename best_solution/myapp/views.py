@@ -42,6 +42,12 @@ def processing(request):
             names_all_features = df.columns
             names_features = features.columns
             name_targets = targets.columns
+
+        status_checkboxes_preprocessing = dict(zip(names_features, [True for _ in range(len(names_features))]))
+        status_checkboxes_handling_outliners = dict(zip(names_features, [True for _ in range(len(names_features))]))
+        status_checkboxes_binning = dict(zip(names_features, [True for _ in range(len(names_features))]))
+        status_checkboxes_transform = dict(zip(names_features, [True for _ in range(len(names_features))]))
+        status_checkboxes_scaling = dict(zip(names_features, [True for _ in range(len(names_features))]))
         status_checkboxes = [True for _ in range(len(names_features))]
         status_checkboxes = dict(zip(names_features, status_checkboxes))
         status_radio = [False for _ in range(len(names_all_features)-1)] + [True]
@@ -51,7 +57,18 @@ def processing(request):
         return render(request, 'myapp/processing.html',
                       {'columns_feature': names_features, 'rows_feature': features.to_dict('records'),
                        'column_targets': name_targets, 'rows_targets': targets.to_dict('records'),
-                       'status_checkboxes': status_checkboxes, 'status_radio': status_radio})
+                       'status_checkboxes': status_checkboxes, 'status_radio': status_radio,
+                       'on_processing_missing' : True,
+                       'status_processing_missing' : status_checkboxes_preprocessing,
+                       'on_handling_outliners': True,
+                       'status_handling_outliners' : status_checkboxes_handling_outliners,
+                       'on_binning': False,
+                       'status_checkboxes_binning': status_checkboxes_binning,
+                       'on_transform': False,
+                       'status_checkboxes_transform': status_checkboxes_transform,
+                       'on_scaling': False,
+                       'status_checkboxes_scaling': status_checkboxes_scaling
+                       })
     elif request.method == 'POST':
         names_for_json = []
         data_for_json = []
@@ -82,10 +99,14 @@ def processing(request):
                         checks_feature_preprocessing.append(got_status_checkboxes_preprocessing[i])
                 got_status_checkboxes_preprocessing = np.array(checks_feature_preprocessing)
             preprocessor.processing_missing_values(features=got_status_checkboxes_preprocessing)
-            changed_df = preprocessor.get_dataframe()
-            changed_df.columns = df.columns
-            select_features = changed_df.drop(changed_df.columns[-1], 1)
-            targets = changed_df[changed_df.columns[-1:]]
+
+            # changed_df = preprocessor.get_dataframe()
+            # changed_df.columns = df.columns
+            # select_features = changed_df.drop(changed_df.columns[-1], 1)
+            # targets = changed_df[changed_df.columns[-1:]]
+            on_processing_missing = True
+        else:
+            on_processing_missing = False
 
         if 'on_handling_outliners' in request.POST:
             if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_handling_outliners):
@@ -95,6 +116,9 @@ def processing(request):
                         checks_feature_handling_outliners.append(got_status_checkboxes_handling_outliners[i])
                 got_status_checkboxes_handling_outliners = np.array(checks_feature_handling_outliners)
             preprocessor.handling_outliners(features=got_status_checkboxes_handling_outliners)
+            on_handling_outliners = True
+        else:
+            on_handling_outliners = False
 
         if 'on_binning' in request.POST :
             if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_binning) :
@@ -104,6 +128,9 @@ def processing(request):
                         checks_feature_binning.append(got_status_checkboxes_binning[i])
                 got_status_checkboxes_binning = np.array(checks_feature_binning)
             preprocessor.binning(int(request.POST['bins']), features=got_status_checkboxes_binning)
+            on_binning = True
+        else:
+            on_binning = False
 
         if 'on_transform' in request.POST :
             if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_transform) :
@@ -118,6 +145,9 @@ def processing(request):
             elif type_transform == 'To box-cox':
                 type_transform = 'box-cox'
             preprocessor.transform(type_transform, features=got_status_checkboxes_transform)
+            on_transform = True
+        else:
+            on_transform = False
 
         if 'on_scaling' in request.POST :
             if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_scaling) :
@@ -134,11 +164,14 @@ def processing(request):
             elif type_scaling == 'l2-normalization' :
                 type_scaling = 'l2-norm'
             preprocessor.scaling(type_scaling, features=got_status_checkboxes_scaling)
+            on_scaling = True
+        else:
+            on_scaling = False
 
-            changed_df = preprocessor.get_dataframe()
-            changed_df.columns = df.columns
-            select_features = changed_df.drop(changed_df.columns[-1], 1)
-            targets = changed_df[changed_df.columns[-1:]]
+        changed_df = preprocessor.get_dataframe()
+        changed_df.columns = df.columns
+        select_features = changed_df.drop(changed_df.columns[-1], 1)
+        targets = changed_df[changed_df.columns[-1:]]
         for index in range(len(all_features.columns)):
             if index not in got_status_checkboxes_features:
                 select_features = select_features.drop(all_features.columns[index], 1)
@@ -157,7 +190,39 @@ def processing(request):
             names_features = all_features.columns
             names_select_features = select_features.columns
             name_targets = targets.columns
+        status_checkboxes_preprocessing = []
+        status_checkboxes_handling_outliners = []
+        status_checkboxes_binning = []
+        status_checkboxes_transform = []
+        status_checkboxes_scaling = []
+        for i in range(len(names_features)):
+            if i in got_status_checkboxes_preprocessing:
+                status_checkboxes_preprocessing.append(True)
+            else:
+                status_checkboxes_preprocessing.append(False)
+            if i in got_status_checkboxes_handling_outliners:
+                status_checkboxes_handling_outliners.append(True)
+            else:
+                status_checkboxes_handling_outliners.append(False)
+            if i in got_status_checkboxes_binning:
+                status_checkboxes_binning.append(True)
+            else:
+                status_checkboxes_binning.append(False)
+            if i in got_status_checkboxes_transform:
+                status_checkboxes_transform.append(True)
+            else:
+                status_checkboxes_transform.append(False)
+            if i in got_status_checkboxes_scaling:
+                status_checkboxes_scaling.append(True)
+            else:
+                status_checkboxes_scaling.append(False)
 
+        status_checkboxes_preprocessing = dict(zip(names_features, status_checkboxes_preprocessing))
+        status_checkboxes_handling_outliners = dict(zip(names_features, status_checkboxes_handling_outliners))
+        status_checkboxes_binning = dict(zip(names_features, status_checkboxes_binning))
+        status_checkboxes_transform = dict(zip(names_features, status_checkboxes_transform))
+        status_checkboxes_scaling = dict(zip(names_features, status_checkboxes_scaling))
+        print(status_checkboxes_preprocessing)
         status_checkboxes = [False for i in range(len(names_features))]
         for number in got_status_checkboxes_features:
             status_checkboxes[number] = True
@@ -169,10 +234,21 @@ def processing(request):
         data_for_json.append((status_checkboxes, status_radio))
         with open(MEDIA_ROOT + '/info_algorithm.json','w') as file:
             json.dump(prepare_for_json(names_for_json, data_for_json), file)
+        print(status_checkboxes_preprocessing)
         return render(request, 'myapp/processing.html',
                       {'columns_feature' : names_select_features, 'rows_feature' : select_features.to_dict('records'),
                        'column_targets' : name_targets, 'rows_targets' : targets.to_dict('records'),
-                       'status_checkboxes':status_checkboxes, 'status_radio': status_radio})
+                       'status_checkboxes':status_checkboxes, 'status_radio': status_radio,
+                       'on_processing_missing': on_processing_missing,
+                       'status_processing_missing': status_checkboxes_preprocessing,
+                       'on_handling_outliners': on_handling_outliners,
+                       'status_handling_outliners': status_checkboxes_handling_outliners,
+                       'on_binning': on_binning,
+                       'status_binning': status_checkboxes_binning,
+                       'on_transform': on_transform,
+                       'status_transform': status_checkboxes_transform,
+                       'on_scaling': on_scaling,
+                       'status_scaling': status_checkboxes_scaling})
 
 def working(request):
     if request.method == 'POST':

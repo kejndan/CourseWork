@@ -103,7 +103,7 @@ function showRadiobuttons() {
 var expanded_checkboxes_for_preprocessing = false;
 function showCheckboxesPreprocessing() {
   var checkboxes = document.getElementById("checkboxes_for_preprocessing");
-  if ($('#on_binning').is(':checked')) {
+  if ($('#on_processing_missing').is(':checked')) {
       if (!expanded_checkboxes_for_preprocessing) {
           checkboxes.style.display = "block";
           expanded_checkboxes_for_preprocessing = true;

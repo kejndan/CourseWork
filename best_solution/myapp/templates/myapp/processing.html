@@ -115,7 +115,7 @@
             <tr>
                 <td align="center">
                     <label>Processing missing<input type="checkbox" id="on_processing_missing"
-                    name="on_processing_missing" checked></label>
+                    name="on_processing_missing" {% if on_processing_missing %}checked{% endif %}></label>
 
                 </td>
                 <td align="center"><div class="multiselect">
@@ -127,7 +127,7 @@
                     </div>
                     <div id="checkboxes_for_preprocessing">
                         <label><input type="checkbox" id="check_all_preprocessing" checked> Select all</label>
-                        {% for col, val in status_checkboxes.items %}
+                        {% for col, val in status_processing_missing.items %}
                         <label>
                                 <input type="checkbox" class="checkbox_preprocessing" name="checks_preprocessing[]"
                                        value="{{ forloop.counter }}"
@@ -142,7 +142,7 @@
             <tr>
                 <td align="center">
                     <label>Handling outliners<input type="checkbox" id="on_handling_outliners"
-                    name="on_handling_outliners" checked></label>
+                    name="on_handling_outliners" {% if on_handling_outliners %}checked{% endif %}></label>
 
                 </td>
                 <td align="center"><div class="multiselect">
@@ -154,7 +154,7 @@
                     </div>
                     <div id="checkboxes_for_handling_outliners">
                         <label><input type="checkbox" id="check_all_handling_outliners" checked> Select all</label>
-                        {% for col, val in status_checkboxes.items %}
+                        {% for col, val in status_handling_outliners.items %}
                         <label>
                                 <input type="checkbox" class="checkbox_handling_outliners"
                                        name="checks_handling_outliners[]"
@@ -170,7 +170,7 @@
             <tr>
                 <td align="center">
                     <label>Binning<input type="checkbox" id="on_binning"
-                    name="on_binning" checked></label>
+                    name="on_binning" {% if on_binning %}checked{% endif %}></label>
                 </td>
                 <td align="center"><div class="multiselect">
                     <label>Number bins <input type="number" name="bins" value="3" min="2" max="10" step="1"></label>
@@ -182,7 +182,7 @@
                     </div>
                     <div id="checkboxes_for_binning">
                         <label><input type="checkbox" id="check_all_binning" checked> Select all</label>
-                        {% for col, val in status_checkboxes.items %}
+                        {% for col, val in status_binning.items %}
                         <label>
                                 <input type="checkbox" class="checkbox_binning" name="checks_binning[]"
                                        value="{{ forloop.counter }}"
@@ -197,7 +197,7 @@
             <tr>
                 <td align="center">
                     <label>Transform<input type="checkbox" id="on_transform"
-                    name="on_transform" checked></label>
+                    name="on_transform" {% if on_transform %}checked{% endif %}></label>
 
                 </td>
                 <td align="center">
@@ -210,7 +210,7 @@
                     </div>
                     <div id="checkboxes_for_transform">
                         <label><input type="checkbox" id="check_all_transform" checked> Select all</label>
-                        {% for col, val in status_checkboxes.items %}
+                        {% for col, val in status_transform.items %}
                         <label>
                                 <input type="checkbox" class="checkbox_transform" name="checks_transform[]"
                                        value="{{ forloop.counter }}"
@@ -230,7 +230,7 @@
             <tr>
                 <td align="center">
                     <label>Scaling<input type="checkbox" id="on_scaling"
-                    name="on_scaling" checked></label>
+                    name="on_scaling" {% if on_scaling %}checked{% endif%}></label>
 
                 </td>
                 <td align="center"><div class="multiselect">
@@ -242,7 +242,7 @@
                     </div>
                     <div id="checkboxes_for_scaling">
                         <label><input type="checkbox" id="check_all_scaling" checked> Select all</label>
-                        {% for col, val in status_checkboxes.items %}
+                        {% for col, val in status_scaling.items %}
                         <label>
                                 <input type="checkbox" class="checkbox_scaling" name="checks_scaling[]"
                                        value="{{ forloop.counter }}"

@@ -42,6 +42,6 @@ def prepare_for_json(names, dicts):
                     output_dict[name][name_column] = 'Target'
                 else:
                     output_dict[name][name_column] = dicts[i][0][name_column]
-        elif name == 'Class_problem':
+        else:
             output_dict[name] = dicts[i]
     return output_dict

@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 import json
 import numpy as np
+from preprocessing_data.preprocessing import PreProcessing
 
 
 def file_to_alg(path, filename):
@@ -36,14 +37,36 @@ def get_solver(class_problems):
 def algorithm_manager(path, filename, class_problems):
     df = pd.read_csv(path + filename)
     with open(path + '\info_algorithm.json') as file:
-        info_data = json.load(file)['Dataset']
+        info_data = json.load(file)
     features = df.copy()
-    for number, name in enumerate(info_data.keys()):
-        if not info_data[name]:
+    for number, name in enumerate(info_data['Dataset'].keys()):
+        if not info_data['Dataset'][name]:
             features = features.drop(df.columns[number], 1)
-        if info_data[name] == 'Target':
+        if info_data['Dataset'][name] == 'Target':
             features = features.drop(df.columns[number], 1)
             target = df[df.columns[number :number + 1]]
+    preprocessor = PreProcessing(pd.concat([features, target], axis=1), -1)
+    if np.any(np.array(list(info_data['Processing_missing'].values()))):
+        changed_features = np.array([i for i in range(len(features.columns)) if info_data['Processing_missing'][features.columns[i]]])
+        preprocessor.processing_missing_values(features=changed_features)
+    if np.any(np.array(list(info_data['Handling_outliners'].values()))):
+        changed_features = np.array([i for i in range(len(features.columns)) if info_data['Handling_outliners'][features.columns[i]]])
+        preprocessor.handling_outliners(features=changed_features)
+    if np.any(np.array(list(info_data['Binning'].values()))):
+        changed_features = np.array([i for i in range(len(features.columns)) if info_data['Binning'][features.columns[i]]])
+        preprocessor.binning(info_data['Number_bins'],features=changed_features)
+    if np.any(np.array(list(info_data['Transform'].values()))):
+        changed_features = np.array([i for i in range(len(features.columns)) if info_data['Transform'][features.columns[i]]])
+        preprocessor.transform(info_data['Type_transform'],features=changed_features)
+    if np.any(np.array(list(info_data['Scaling'].values()))):
+        changed_features = np.array([i for i in range(len(features.columns)) if info_data['Scaling'][features.columns[i]]])
+        preprocessor.scaling(info_data['Type_scaling'],features=changed_features)
+    changed_df = preprocessor.get_dataframe()
+    features = changed_df.drop(changed_df.columns[-1], 1)
+    target = changed_df[changed_df.columns[-1 :]]
+
+
+
     x_train, x_test, y_train, y_test = train_test_split(features, target, test_size=.2, random_state=42)
     GB = get_solver(class_problems)(population_size=50, n_generations=3, name=filename, path=path)
     GB.cv = 3

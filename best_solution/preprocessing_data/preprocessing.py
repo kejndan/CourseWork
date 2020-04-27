@@ -53,7 +53,6 @@ class PreProcessing :
         if features is None :
             features = range(len(self.np_dataset[0]))
         if to == 'auto' :
-            print(self.np_dataset)
             index_no_del_features = []
             for feature in range(len(self.np_dataset[0])) :
                 if feature in features:

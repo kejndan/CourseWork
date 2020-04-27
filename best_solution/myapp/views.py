@@ -109,7 +109,7 @@ def processing(request):
             np.delete(got_status_checkboxes_features, np.where(got_status_checkboxes_features == index_target))
         select_features = all_features.copy()
         preprocessor = preprocessing.PreProcessing(pd.concat([all_features, targets], axis=1), -1)
-        # index_target = -1
+        preprocessor.one_hot_check()
         if 'on_processing_missing' in request.POST:
             if not np.array_equal(got_status_checkboxes_features, got_status_checkboxes_preprocessing):
                 checks_feature_preprocessing = []
@@ -301,33 +301,7 @@ def working(request):
                 os.remove(MEDIA_ROOT+'\output.txt')
             THREAD[0] = Process(target=algorithm_manager, args=(MEDIA_ROOT, '\data.csv', class_problem,))
             THREAD[0].start()
-        df = pd.read_csv(MEDIA_ROOT + '\data.csv')
-
-        features = df.copy()
-        for number, name in enumerate(info_data.keys()) :
-            if not info_data[name] :
-                features = features.drop(df.columns[number], 1)
-            if info_data[name] == 'Target' :
-                features = features.drop(df.columns[number], 1)
-                target = df[df.columns[number :number + 1]]
-        try:
-            names_all_features = np.array(df.columns, dtype=float)
-            names_features = np.array(features.columns, dtype=float)
-            names_all_features = get_names(len(names_all_features))
-            names_features = get_names(len(names_features))
-            name_targets = ['Target']
-        except ValueError:
-            names_all_features = df.columns
-            names_features = features.columns
-            name_targets = target.columns
-        status_checkboxes = [True for i in range(len(names_features))]
-        status_checkboxes = dict(zip(names_features, status_checkboxes))
-        status_radio = [False for i in range(len(names_all_features)-1)] + [True]
-        status_radio = dict(zip(names_all_features, status_radio))
-        return render(request, 'myapp/processing.html',
-                      {'columns_feature' : names_features, 'rows_feature' : features.to_dict('records'),
-                       'column_targets' : name_targets, 'rows_targets' : target.to_dict('records'),
-                       'status_checkboxes' : status_checkboxes, 'status_radio' : status_radio})
+        return render(request, 'myapp/working.html')
 
 
 def result(request):
@@ -397,6 +371,10 @@ def prepared(request):
                            'status_checkboxes' : status_checkboxes})
         elif 'RUN' in request.POST:
             df = pd.read_csv(MEDIA_ROOT + '\data.csv')
+            # df = pd.read_csv(path + filename)
+            with open(MEDIA_ROOT + '\info_algorithm.json') as file :
+                info_data = json.load(file)
+            features = df.copy()
             got_status_checkboxes_features = np.array(request.POST.getlist('checks[]'), dtype=int) - 1
             print(got_status_checkboxes_features)
             all_features = df.copy()
@@ -419,10 +397,58 @@ def prepared(request):
             status_checkboxes = [False for i in range(len(names_all_features))]
             for number in got_status_checkboxes_features :
                 status_checkboxes[number] = True
+            features = select_features
             status_checkboxes = dict(zip(names_all_features, status_checkboxes))
+            preprocessor = preprocessing.PreProcessing(features, None)
+            preprocessor.enc = pickle.load(open(MEDIA_ROOT + '\\preprocessor.pkl', 'rb')).enc
+            preprocessor.one_hot_check()
+            if np.any(np.array(list(info_data['Processing_missing'].values()))) :
+                try :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if
+                         info_data['Processing_missing'][features.columns[i]]])
+                except Exception :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if info_data['Processing_missing'][f'Feature {i}']])
+                preprocessor.processing_missing_values(features=changed_features)
+            if np.any(np.array(list(info_data['Handling_outliners'].values()))) :
+                try :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if
+                         info_data['Handling_outliners'][features.columns[i]]])
+                except Exception :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if info_data['Handling_outliners'][f'Feature {i}']])
+                preprocessor.handling_outliners(features=changed_features)
+            if np.any(np.array(list(info_data['Binning'].values()))) :
+                try :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if info_data['Binning'][features.columns[i]]])
+                except Exception :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if info_data['Binning'][f'Feature {i}']])
+                preprocessor.binning(info_data['Number_bins'], features=changed_features)
+            if np.any(np.array(list(info_data['Transform'].values()))) :
+                try :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if info_data['Transform'][features.columns[i]]])
+                except Exception :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if info_data['Transform'][f'Feature {i}']])
+                preprocessor.transform(info_data['Type_transform'], features=changed_features)
+            if np.any(np.array(list(info_data['Scaling'].values()))) :
+                try :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if info_data['Scaling'][features.columns[i]]])
+                except Exception :
+                    changed_features = np.array(
+                        [i for i in range(len(features.columns)) if info_data['Scaling'][f'Feature {i}']])
+                preprocessor.scaling(info_data['Type_scaling'], features=changed_features)
+            preprocessor.one_hot_encoder_categorical_features()
             pipeline = pickle.load(open(MEDIA_ROOT + '\\pipeline.pkl', 'rb'))
-            print(select_features)
-            result = pd.DataFrame(pipeline.predict(select_features))
+            changed_df = preprocessor.get_dataframe()
+            # features = changed_df.drop(changed_df.columns[-1], 1)
+            result = pd.DataFrame(pipeline.predict(changed_df))
             return render(request, 'myapp/prepared.html',
                           {'columns_feature' : names_select_features,
                            'rows_feature' : select_features.to_dict('records'),

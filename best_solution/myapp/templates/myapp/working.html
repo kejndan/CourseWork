@@ -1,0 +1,24 @@
+{% extends 'myapp/_base.html' %}
+{% load static %}
+
+
+{% block content %}
+    <script src="{% static 'myapp/script.js' %}"></script>
+    <script>
+        var url = "{% static '' %}";
+    </script>
+    <div id="window_output">
+{#        {% for stat in status %}#}
+{#            <p><b>{{ stat }}</b></p>#}
+{#        {% endfor %}#}
+    </div>
+
+    <form action="working" method="post" id="form">
+        {% csrf_token %}
+            <input type="submit" class="btn" value="RUN" id="start_btn">
+            <input type="submit" class="btn" value="STOP" id="stop_btn" disabled>
+    </form>
+
+
+{#  <p><a href="{% url 'home' %}">Return to home</a></p>#}
+{% endblock %}

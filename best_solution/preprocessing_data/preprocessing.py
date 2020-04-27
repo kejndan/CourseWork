@@ -167,19 +167,20 @@ class PreProcessing :
         if features is None :
             features = range(len(self.np_dataset[0]))
         for feature in features :
-            if method == 'std' :
-                upper_lim = self.np_dataset[:, feature].mean() + self.np_dataset[:, feature].std() * factor
-                lower_lim = self.np_dataset[:, feature].mean() - self.np_dataset[:, feature].std() * factor
-            else :
-                upper_lim = np.quantile(self.np_dataset[:, feature], .95)
-                lower_lim = np.quantile(self.np_dataset[:, feature], .05)
+            if feature not in self.one_hot_features :
+                if method == 'std' :
+                    upper_lim = self.np_dataset[:, feature].mean() + self.np_dataset[:, feature].std() * factor
+                    lower_lim = self.np_dataset[:, feature].mean() - self.np_dataset[:, feature].std() * factor
+                else :
+                    upper_lim = np.quantile(self.np_dataset[:, feature], .95)
+                    lower_lim = np.quantile(self.np_dataset[:, feature], .05)
 
-            if method == 'percentile' or method == 'std' :
-                self.np_dataset = self.np_dataset[(self.np_dataset[:, feature] < upper_lim) &
-                                                  (self.np_dataset[:, feature] > lower_lim)]
-            else :
-                self.np_dataset[(self.np_dataset[:, feature] > upper_lim), feature] = upper_lim
-                self.np_dataset[(self.np_dataset[:, feature] < lower_lim), feature] = lower_lim
+                if method == 'percentile' or method == 'std' :
+                    self.np_dataset = self.np_dataset[(self.np_dataset[:, feature] < upper_lim) &
+                                                      (self.np_dataset[:, feature] > lower_lim)]
+                else :
+                    self.np_dataset[(self.np_dataset[:, feature] > upper_lim), feature] = upper_lim
+                    self.np_dataset[(self.np_dataset[:, feature] < lower_lim), feature] = lower_lim
         return self.np_dataset
 
     def binning(self, n_bins, type_binning='equal', features=None) :
@@ -197,15 +198,16 @@ class PreProcessing :
         if features is None :
             features = range(len(self.np_dataset[0]))
         for feature in features :
-            if type_binning == 'equal' :
-                self.np_dataset[:, feature] = binning.equal_width_binning(self.np_dataset[:, feature], n_bins, False) \
-                    .astype(str)
-            elif type_binning == 'entropy' :
-                self.np_dataset[:, feature] = binning.entropy_binning(self.np_dataset[:, feature], self.target, n_bins,
-                                                                      False).astype(str)
-            else :
-                self.np_dataset[:, feature] = binning.quantile_binning(self.np_dataset[:, feature], n_bins, False) \
-                    .astype(str)
+            if feature not in self.one_hot_features :
+                if type_binning == 'equal' :
+                    self.np_dataset[:, feature] = binning.equal_width_binning(self.np_dataset[:, feature], n_bins, False) \
+                        .astype(str)
+                elif type_binning == 'entropy' :
+                    self.np_dataset[:, feature] = binning.entropy_binning(self.np_dataset[:, feature], self.target, n_bins,
+                                                                          False).astype(str)
+                else :
+                    self.np_dataset[:, feature] = binning.quantile_binning(self.np_dataset[:, feature], n_bins, False) \
+                        .astype(str)
 
         return self.np_dataset
 
@@ -223,11 +225,12 @@ class PreProcessing :
         if features is None :
             features = range(len(self.np_dataset[0]))
         for feature in features :
-            if type(self.np_dataset[0, feature]) != str :
-                if type_transform == 'log' :
-                    self.np_dataset[:, feature] = to_log(self.np_dataset[:, feature], arg)
-                elif type_transform == 'box-cox' :
-                    self.np_dataset[:, feature] = to_box_cox(self.np_dataset[:, feature], arg)
+            if feature not in self.one_hot_features :
+                if type(self.np_dataset[0, feature]) != str :
+                    if type_transform == 'log' :
+                        self.np_dataset[:, feature] = to_log(self.np_dataset[:, feature], arg)
+                    elif type_transform == 'box-cox' :
+                        self.np_dataset[:, feature] = to_box_cox(self.np_dataset[:, feature], arg)
         return self.np_dataset
 
     def scaling(self, type_scale='norm', features=None) :
@@ -244,13 +247,14 @@ class PreProcessing :
         if features is None :
             features = range(len(self.np_dataset[0]))
         for feature in features :
-            if type(self.np_dataset[0, feature]) != str :
-                if type_scale == 'norm' :
-                    self.np_dataset[:, feature] = scaling.normalization(self.np_dataset[:, feature])
-                elif type_scale == 'stand' :
-                    self.np_dataset[:, feature] = scaling.standardization(self.np_dataset[:, feature])
-                elif type_scale == 'l2-norm' :
-                    self.np_dataset[:, feature] = scaling.l2_normalized(self.np_dataset[:, feature])
+            if feature not in self.one_hot_features:
+                if type(self.np_dataset[0, feature]) != str :
+                    if type_scale == 'norm' :
+                        self.np_dataset[:, feature] = scaling.normalization(self.np_dataset[:, feature])
+                    elif type_scale == 'stand' :
+                        self.np_dataset[:, feature] = scaling.standardization(self.np_dataset[:, feature])
+                    elif type_scale == 'l2-norm' :
+                        self.np_dataset[:, feature] = scaling.l2_normalized(self.np_dataset[:, feature])
         return self.np_dataset
 
     def one_hot_check(self) :

@@ -10,13 +10,15 @@ from sklearn.pipeline import make_pipeline
 from construction_pipeline.models import preprocessing_models, selection_models, classification_models, regression_models, clustering_models
 from time import time
 import pandas as pd
+
 import sklearn
+
 import warnings
 from sklearn.metrics import accuracy_score
 from datetime import datetime
 from func_timeout import func_timeout, FunctionTimedOut
 import pickle
-from sklearn import svm,tree, ensemble, preprocessing, feature_selection, linear_model, neighbors
+from sklearn import svm,tree, ensemble, preprocessing, feature_selection, linear_model, neighbors, naive_bayes
 
 
 CALLABLES = (types.FunctionType, types.MethodType)
@@ -453,8 +455,15 @@ class GeneticBase(object) :
         self._create_primitives_and_terminals_storage()
         self._setup_toolbox()
         self.population = self._toolbox.population()
+        if targets is None :
+            targets = []
+        if self.type_explore == 'regression':
+            targets = np.array(targets, dtype=np.float)
+        elif self.type_explore == 'classification':
+            targets = np.array(targets, dtype=np.int)
         self.features_train = features
         self.targets_train = targets
+
 
         # добавляение информации об индивидах
         for ind in self.population :
@@ -495,9 +504,12 @@ class GeneticBase(object) :
         # print(pipeline_list_population)
         learned_pipelines = []
         # print(pipeline_list_population)
+        if self.type_explore == 'regression':
+            targets_test = np.array(targets_test, dtype=np.float)
+        elif self.type_explore == 'classification':
+            targets_test = np.array(targets_test, dtype=np.int)
 
-        x_valid, x_test, y_valid, y_test = train_test_split(features_test, targets_test, test_size=.5,
-                                                            random_state=42)
+        x_valid, x_test, y_valid, y_test = train_test_split(features_test, targets_test, test_size=.5)
         for index, pipeline in enumerate(pipeline_list_population) :
             try:
                 if self.type_explore == 'clustering' :
@@ -510,8 +522,8 @@ class GeneticBase(object) :
                 elif self.type_explore == 'classification' :
                     pipeline[1].fit(self.features_train, self.targets_train)
                     learned_pipelines.append((index, self.score_func(y_valid, pipeline[1].predict(x_valid))))
-            except :
-                pass
+            except Exception as e:
+                print(e)
         learned_pipelines = sorted(learned_pipelines, key=lambda x : x[1], reverse=True)
         error_list = []
         for number in range(3) :

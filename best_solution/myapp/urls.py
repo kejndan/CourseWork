@@ -6,9 +6,10 @@ from . import views
 urlpatterns = [
     path('', views.upload_file, name='index'),
     path('processing/', views.processing),
-    path('processing/working', views.working),
+    path('processing/working', views.processing),
     path('processing/result', views.result),
-    path('prepared/', views.prepared)
+    path('prepared/', views.prepared),
+    path('processing/download',views.download)
 ]
 
 

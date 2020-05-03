@@ -1,10 +1,16 @@
 {% extends 'myapp/_base.html' %}
-
+{% load static %}
 {% block content %}
+    <script src="{% static 'myapp/script.js' %}"></script>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload</button>
+
+    {{ form }}
+      <div id="upload">
+          <div class="upload_block">Choose dataset</div>
+    <button type="submit" class="upload_file">Upload</button>
+      </div>
+
   </form>
 
 {#  <p><a href="{% url 'home' %}">Return to home</a></p>#}

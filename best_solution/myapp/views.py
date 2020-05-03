@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from .forms import UploadFileForm
 import pandas as pd
@@ -29,6 +29,7 @@ def upload_file(request):
 
 def processing(request):
     if request.method == 'GET':
+
         names_for_json = []
         data_for_json = []
         df = pd.read_csv(MEDIA_ROOT+'\\data.csv')
@@ -273,6 +274,19 @@ def processing(request):
             data_for_json.append(type_scaling)
         with open(MEDIA_ROOT + '/info_algorithm.json','w') as file:
             json.dump(prepare_for_json(names_for_json, data_for_json), file)
+        if 'RUN' in request.POST:
+            with open(MEDIA_ROOT + '\info_algorithm.json') as file :
+                data_from_json = json.load(file)
+                info_data = data_from_json['Dataset']
+                class_problem = data_from_json['Class_problem']
+            if THREAD[0].is_alive() :
+                THREAD[0].terminate()
+            else :
+                if os.path.isfile(MEDIA_ROOT + '\output.txt') :
+                    os.remove(MEDIA_ROOT + '\output.txt')
+                THREAD[0] = Process(target=algorithm_manager, args=(MEDIA_ROOT, '\data.csv', class_problem,))
+                THREAD[0].start()
+
         return render(request, 'myapp/processing.html',
                       {'columns_feature' : names_select_features, 'rows_feature' : select_features.to_dict('records'),
                        'column_targets' : name_targets, 'rows_targets' : targets.to_dict('records'),
@@ -287,21 +301,6 @@ def processing(request):
                        'status_transform': status_checkboxes_transform,
                        'on_scaling': on_scaling,
                        'status_scaling': status_checkboxes_scaling})
-
-def working(request):
-    if request.method == 'POST':
-        with open(MEDIA_ROOT + '\info_algorithm.json') as file :
-            data_from_json = json.load(file)
-            info_data = data_from_json['Dataset']
-            class_problem = data_from_json['Class_problem']
-        if THREAD[0].is_alive():
-            THREAD[0].terminate()
-        else:
-            if os.path.isfile(MEDIA_ROOT+'\output.txt') :
-                os.remove(MEDIA_ROOT+'\output.txt')
-            THREAD[0] = Process(target=algorithm_manager, args=(MEDIA_ROOT, '\data.csv', class_problem,))
-            THREAD[0].start()
-        return render(request, 'myapp/working.html')
 
 
 def result(request):
@@ -325,7 +324,7 @@ def result(request):
 def prepared(request):
     if request.method == 'GET':
         df = pd.read_csv(MEDIA_ROOT + '\\data.csv')
-        features = df.drop(df.columns[-1], 1)
+        features = df
         try :
             names_all_features = np.array(df.columns, dtype=float)
             names_features = np.array(features.columns, dtype=float)
@@ -369,7 +368,7 @@ def prepared(request):
                           {'columns_feature' : names_select_features,
                            'rows_feature' : select_features.to_dict('records'),
                            'status_checkboxes' : status_checkboxes})
-        elif 'RUN' in request.POST:
+        elif 'RUN' in request.POST or 'Download' in request.POST:
             df = pd.read_csv(MEDIA_ROOT + '\data.csv')
             # df = pd.read_csv(path + filename)
             with open(MEDIA_ROOT + '\info_algorithm.json') as file :
@@ -449,9 +448,28 @@ def prepared(request):
             changed_df = preprocessor.get_dataframe()
             # features = changed_df.drop(changed_df.columns[-1], 1)
             result = pd.DataFrame(pipeline.predict(changed_df))
-            return render(request, 'myapp/prepared.html',
-                          {'columns_feature' : names_select_features,
-                           'rows_feature' : select_features.to_dict('records'),
-                           'column_targets' : 'Target', 'rows_targets' : result.to_dict('records'),
-                           'status_checkboxes' : status_checkboxes})
+            if 'RUN' in request.POST:
+                return render(request, 'myapp/prepared.html',
+                              {'columns_feature' : names_select_features,
+                               'rows_feature' : select_features.to_dict('records'),
+                               'column_targets' : ['Target'], 'rows_targets' : result.to_dict('records'),
+                               'status_checkboxes' : status_checkboxes})
+            else:
+                file_path = os.path.join(MEDIA_ROOT, 'new_data.csv')
+                pd.DataFrame(pd.concat((select_features, result),axis=1)).to_csv(file_path, index=False)
+                if os.path.exists(file_path) :
+                    with open(file_path, 'rb') as fh :
+                        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+                        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+                        return response
+                raise Http404
 
+
+def download(request):
+    file_path = os.path.join(MEDIA_ROOT, 'data.csv')
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    raise Http404

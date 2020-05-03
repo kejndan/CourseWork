@@ -179,6 +179,7 @@ regression_models = {
     },
 }
 
+
 clustering_models = {
     'sklearn.cluster.KMeans': {
         'n_clusters': np.arange(2, 11),

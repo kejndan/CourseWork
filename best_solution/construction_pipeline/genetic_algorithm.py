@@ -192,6 +192,8 @@ class GeneticBase(object) :
                     # print(cross_val_pipeline['test_score'].mean(), type(cross_val_pipeline['test_score'].mean()))
                     # print( cross_val_pipeline['test_score'].mean() is np.float64('nan'))
                     print(number_pipeline, score)
+                    with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f :
+                        f.write(str(score)+'\n')
                     population[number_pipeline].fitness.values = (len(population[number_pipeline]), score)
                     # print(population[number_pipeline].fitness.value)
                     population[number_pipeline].time = time
@@ -469,32 +471,32 @@ class GeneticBase(object) :
         for ind in self.population :
             self.add_info(ind)
 
-        with open(self.path+'\output.txt', 'w') as f:
-            f.write('')
+        # with open(self.path+'\output.txt', 'w') as f:
+        #     f.write('')
         pipeline_list_population = self._toolbox.compile(self.population)
         self._evaluation_individuals(self.population, pipeline_list_population, features, targets)
         for number_generation in range(self.n_generations) :
-            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
-                f.write('Поколение ' + str(number_generation) + ' ' +'!\n')
+            # with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
+            #     f.write('Поколение ' + str(number_generation) + ' ' +'!\n')
             # pipeline_list_population = self._toolbox.compile(self.population)
             # with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
             #     f.write('Началось оценка популяции\n')
             # s = time()
             #
-            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
-                # f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
-                f.write('Началось создание потомков\n')
+            # with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
+            #     # f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
+            #     f.write('Началось создание потомков\n')
             s = time()
             offspring = self._create_offspring(self.population, features, targets, time_info=False)
-            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
-                f.write('Потомки созданы. Время создания {0}\n'.format(time() - s))
+            # with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
+            #     f.write('Потомки созданы. Время создания {0}\n'.format(time() - s))
             pipeline_list_offspring = self._toolbox.compile(offspring)
-            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
-                f.write('Началось оценка популяции\n')
+            # with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
+            #     f.write('Началось оценка популяции\n')
             s = time()
             self._evaluation_individuals(offspring, pipeline_list_offspring, features, targets)
-            with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
-                f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
+            # with open(self.path + '\output.txt', 'a', encoding="UTF-8") as f:
+            #     f.write('Оценка окончена. Время оценки {0}\n'.format(time() - s))
             self.population[:] = self._toolbox.select(self.population + offspring, self.population_size)
 
         return self.population[0], self.individual_to_sklearn(self.population[0])

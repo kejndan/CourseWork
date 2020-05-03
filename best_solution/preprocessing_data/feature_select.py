@@ -1,5 +1,5 @@
 # coding=utf8
-from math_func.math import dist_corr, entropy
+from math_func import dist_corr, entropy
 import numpy as np
 from collections import Counter
 # from tpot import TPOTClassifier
@@ -21,9 +21,9 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import PolynomialFeatures
 from stability_selection import RandomizedLasso
-from preprocessing_data.binning import _entropy
+from binning import _entropy
 
-
+from scipy.spatial.distance import correlation
 class FeatureSelect:
     def __init__(self, change_features, labels, no_change_features=None):
         self.data = change_features
@@ -80,7 +80,7 @@ class FeatureSelect:
         # count = 0
         for i in range(data.shape[1]):
             for j in range(data.shape[1]):
-                corr = dist_corr(data[:, i], data[:, j])
+                corr = 1 - correlation(data[:, i], data[:, j])
                 if i != j and corr > 0:
                     if corr < beta:
                         clf = KernelRidge(alpha=1.0, coef0=1, degree=3, gamma=None, kernel='rbf', kernel_params=None)
@@ -110,9 +110,9 @@ class FeatureSelect:
         mask = np.array(np.arange(len(self.labels)))
         np.random.shuffle(mask)
         if return_mask:
-            return data[mask][:int(test_size * len(self.labels))], data[mask][int(test_size * len(self.labels)):], mask
+            return data[mask][int(test_size * len(self.labels)):], data[mask][:int(test_size * len(self.labels))], mask
         else:
-            return data[mask][:int(test_size * len(self.labels))], data[mask][int(test_size * len(self.labels)):]
+            return data[mask][int(test_size * len(self.labels)):], data[mask][:int(test_size * len(self.labels))]
 
     def feature_selection(self, data, alpha, report=True):
         """
@@ -134,17 +134,17 @@ class FeatureSelect:
         x_test = test[:, :-1]
         y_test = test[:, -1:]
         new_train, new_test = np.empty((train.shape[0], 0)), np.empty((test.shape[0], 0))
-        clf = RandomizedLasso(alpha=0)
+        clf = LassoCV()
         clf.fit(x_train, y_train)
         for i in range(x_train.shape[1]):
-            if clf.coef_[i] > 0.0 and self.information_gain(x_train[:, i]) > alpha:
+            if clf.coef_[i] >= 0.0 and self.information_gain(x_train[:, i]) > alpha:
                 # self.displaying_table3[0].append(i)
                 # self.displaying_table3[1].append(len(new_train[0]))
                 new_train = np.hstack([new_train, x_train[:, i][:, np.newaxis]])
                 new_test = np.hstack([new_test, x_test[:, i][:, np.newaxis]])
         if self.no_change_features is not None:
-            new_train = np.concatenate((x_train, self.no_change_features[mask][:int(0.2 * len(self.labels))]), axis=1)
-            new_test = np.concatenate((x_test, self.no_change_features[mask][int(0.2 * len(self.labels)):]), axis=1)
+            new_train = np.concatenate((new_train, self.no_change_features[mask][int(0.2 * len(self.labels)):]), axis=1)
+            new_test = np.concatenate((new_test, self.no_change_features[mask][:int(0.2 * len(self.labels))]), axis=1)
         if report:
             print('Shape of data after feature selection ', new_train.shape, new_test.shape)
         return new_train, y_train, new_test, y_test
@@ -169,10 +169,11 @@ class FeatureSelect:
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('../datasets/Fish.csv')
+    df = pd.read_csv('C:\\Users\\adels\Documents\datasets\\classification\waveform.csv')
+    # df = df.dropna(k)
     # df = df.dropna()
     # X1 = np.array(df.drop(df.columns[-1], 1))
-    df = df.drop(df.columns[0],1)
+    # df = df.drop(df.columns[0],1)
     # df = df.drop(df.index[14000:],0)
     # SS = StandardScaler()
     # MMS = MinMaxScaler()
@@ -194,18 +195,18 @@ if __name__ == '__main__':
     y2 = np.array(test_set[test_set.columns[-1]])
     print(x1.shape, y1.shape, x2.shape, y2.shape)
     # n_samples, n_features = x1.shape
-    # knn = KNeighborsClassifier()
-    # lr = LogisticRegression()
-    # rf = RandomForestClassifier()
-    # ab = AdaBoostClassifier()
-    # nn = MLPClassifier()
-    # dt = ExtraTreesClassifier()
-    knn = KNeighborsRegressor()
-    lr = LinearRegression()
-    rf = RandomForestRegressor()
-    ab = AdaBoostRegressor()
-    dt = ExtraTreesRegressor()
-    nn = MLPRegressor()
+    knn = KNeighborsClassifier()
+    lr = LogisticRegression()
+    rf = RandomForestClassifier()
+    ab = AdaBoostClassifier()
+    nn = MLPClassifier()
+    dt = ExtraTreesClassifier()
+    # knn = KNeighborsRegressor()
+    # lr = LinearRegression()
+    # rf = RandomForestRegressor()
+    # ab = AdaBoostRegressor()
+    # dt = ExtraTreesRegressor()
+    # nn = MLPRegressor()
     knn.fit(x1, y1)
     lr.fit(x1, y1)
     rf.fit(x1, y1)
@@ -235,9 +236,9 @@ if __name__ == '__main__':
         # ys = np.array(x[x.columns[-1]])
         X = np.array(X1)
         enc = OneHotEncoder()
-        FS = FeatureSelect(X[:,1:], y, no_change_features=enc.fit_transform(X[:,:1]).toarray())
+        FS = FeatureSelect(X, y)
         # FS = FeatureSelect(xs, ys)
-        x3, y3, x4, y4 = FS.main(.1, 0.4)
+        x3, y3, x4, y4 = FS.main(0.1, 0.4)
         # stats = FS.stat_feature()
         # all_stats = all_stats+np.array(stats)
         old_x3 = deepcopy(x3)

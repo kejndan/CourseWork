@@ -8,64 +8,66 @@
         var url = "{% static '' %}";
     </script>
 
-
-    <div id="window_table">
-        <div id="features_window">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <div id="show_elements">
+    <div class="window_table">
+    <div class="features_window_outer">
+        <p>Features</p>
+        <div class="features_window">
+            <table class="table table-bordered" id="dataTable" border="1" width="100%" cellpadding="5">
                 <thead>
                     <tr>
-                        <th>Number of row</th>
+                        <th align="center">Number of row</th>
                         {% for col in columns_feature %}
-                        <th>{{ col }}</th>
+                        <th align="center">{{ col }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in rows_feature %}
                         <tr>
-                        <td>{{ forloop.counter }}</td>
+                        <td align="center">{{ forloop.counter }}</td>
                         {% for value in row.values %}
-                          <td>{{value}}</td>
+                          <td align="center">{{value}}</td>
                         {% endfor %}
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div id="targets_window" width="100%" cellspacing="0">
-            <table>
+    </div>
+        <div class="targets_window_outer">
+        <p>Prediction</p>
+        <div class="targets_window" >
+            <table border="1" width="100%" cellpadding="5">
                 <thead>
                 <tr>
-                    <th>Number of row</th>
+                    <th align="center">Number of row</th>
                     {% for col in column_targets %}
-                    <th>{{ col }}</th>
+                    <th align="center">{{ col }}</th>
                     {% endfor %}
                 </tr>
                 </thead>
                 <tbody>
                     {% for row in rows_targets %}
                         <tr>
-                        <td>{{ forloop.counter }}</td>
+                        <td align="center">{{ forloop.counter }}</td>
                          {% for value in row.values %}
-                             <td>{{value}}</td>
+                             <td align="center">{{value}}</td>
                          {% endfor %}
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-    <div id="window_output">
-{#        {% for stat in status %}#}
-{#            <p><b>{{ stat }}</b></p>#}
-{#        {% endfor %}#}
-    </div>
+        </div>
+
     <form action="" method="post">
         {% csrf_token %}
 
     <div id="settings">
+        <p>Settings</p>
         <table border="1" width="100%" cellpadding="5">
-            <tr><td colspan="2" align="center">Selects working columns</td></tr>
+            <tr>
 {#            Select features#}
             <tr>
                 <td align="center">Select features <div class="multiselect">
@@ -258,16 +260,27 @@
                     </select>
                     </div></td>
             </tr>
-            <tr><td colspan="2" align="center"><input type="submit" class="btn" value="Change" id="start_btn"></td></tr>
-
+            <tr>
+                <td  align="center">
+                <input type="submit" class="btn" value="Change" id="start_btn" name="Change">
+            </td>
+                <td  align="center">
+                    <input type="submit" class="btn" value="RUN" id="start_btn" name="RUN"></td>
+        </tr>
         </table>
+
     </div>
+
     </form>
-    <form action="working" method="post" id="form">
-        {% csrf_token %}
-            <input type="submit" class="btn" value="RUN" id="start_btn">
-            <input type="submit" class="btn" value="STOP" id="stop_btn" disabled>
-    </form>
+    </div>
+    <div id="myProgress">
+        <div id="myBar"></div>
+        </div>
+    </div>
+{#    <form action="working" method="post" id="form">#}
+{#        {% csrf_token %}#}
+{#            #}
+{#    </form>#}
 
 
 {#  <p><a href="{% url 'home' %}">Return to home</a></p>#}

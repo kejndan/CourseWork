@@ -3,55 +3,65 @@
 
 {% block content%}
         <script src="{% static 'myapp/script.js' %}"></script>
-    <div id="window_table">
-        <div id="features_window">
-            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+    <form action="" method="post">
+    <div id="prepared_window">
+    <div class="window_table_prep">
+
+        {% csrf_token %}
+        <div class="features_window_outer">
+        <p>Features</p>
+        <div class="features_window">
+            <table class="table table-bordered" id="dataTable" border="1" width="100%" cellpadding="5">
                 <thead>
                     <tr>
-                        <th>Number of row</th>
+                        <th align="center">Number of row</th>
                         {% for col in columns_feature %}
-                        <th>{{ col }}</th>
+                        <th align="center">{{ col }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in rows_feature %}
                         <tr>
-                        <td>{{ forloop.counter }}</td>
+                        <td align="center">{{ forloop.counter }}</td>
                         {% for value in row.values %}
-                          <td>{{value}}</td>
+                          <td align="center">{{value}}</td>
                         {% endfor %}
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div id="targets_window" width="100%" cellspacing="0">
-            <table>
+        <div id="selection_buttons">
+
+
+    </div>
+    </div>
+        <div class="targets_window_outer">
+        <p>Prediction</p>
+        <div class="targets_window" >
+            <table border="1" width="100%" cellpadding="5">
                 <thead>
                 <tr>
-                    <th>Number of row</th>
+                    <th align="center">Number of row</th>
                     {% for col in column_targets %}
-                    <th>{{ col }}</th>
+                    <th align="center">{{ col }}</th>
                     {% endfor %}
                 </tr>
                 </thead>
                 <tbody>
                     {% for row in rows_targets %}
                         <tr>
-                        <td>{{ forloop.counter }}</td>
+                        <td align="center">{{ forloop.counter }}</td>
                          {% for value in row.values %}
-                             <td>{{value}}</td>
+                             <td align="center">{{value}}</td>
                          {% endfor %}
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-    </div>
-    <form action="" method="post">
-        {% csrf_token %}
-        <div class="multiselect">
+    <div class="multiselect">
             <div class="selectBox" onclick="showCheckboxes()">
                 <select>
                     <option>Select an option</option>
@@ -68,9 +78,44 @@
                 {% endfor %}
             </div>
         </div>
-        <input type="submit" class="btn" value="Change" id="start_btn" name="Change">
-    <input type="submit" class="btn" value="RUN" id="start_btn" name="RUN">
-{#    </form>#}
+
+        </div>
+
+    </div>
+        <div id="buttons">
+            <input type="submit" class="btn" value="Change" id="start_btn" name="Change">
+            <input type="submit" class="btn" value="RUN" id="start_btn" name="RUN">
+            <input type="submit" class="btn" value="Download" id="start_btn" name="Download">
+        </div>
+    </div>
+
+{#    <div id="selection_buttons">#}
+{##}
+{#        <input type="submit" class="btn" value="Change" id="start_btn" name="Change">#}
+{#    <input type="submit" class="btn" value="RUN" id="start_btn" name="RUN">#}
+{#    </div>#}
+    </form>
+
+{#        <div class="multiselect">#}
+{#            <div class="selectBox" onclick="showCheckboxes()">#}
+{#                <select>#}
+{#                    <option>Select an option</option>#}
+{#                </select>#}
+{#                <div class="overSelect"></div>#}
+{#            </div>#}
+{#            <div id="checkboxes">#}
+{#                {% for col, val in status_checkboxes.items %}#}
+{#                <label>#}
+{#                        <input type="checkbox" name="checks[]" value="{{ forloop.counter }}"#}
+{#                            {%if val %}checked="checked"{% endif %}/>#}
+{#                        {{col}}#}
+{#                </label>#}
+{#                {% endfor %}#}
+{#            </div>#}
+{#        </div>#}
+{#        <input type="submit" class="btn" value="Change" id="start_btn" name="Change">#}
+{#    <input type="submit" class="btn" value="RUN" id="start_btn" name="RUN">#}
+
 {#        <form action="" method="post" id="form">#}
 {#        {% csrf_token %}#}
 {#            #}

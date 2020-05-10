@@ -16,6 +16,7 @@ from sklearn import feature_selection
 from sklearn import cluster
 from sklearn import naive_bayes
 import sklearn
+import xgboost
 from sklearn import ensemble
 import warnings
 from sklearn.metrics import accuracy_score

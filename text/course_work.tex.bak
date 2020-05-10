@@ -1,33 +1,78 @@
 \input{header.tex}
 
 \begin{document}
+\tableofcontents
+
+\input{begin.tex}
+
+\input{sam.tex}
+\input{selection_hyper.tex}
+\chapter{Результаты}
+В данной главе будет приведены результаты сравнения качества и скорости работы алгоритмов SAM и TPOT. Все измерения происходили на сайте https://colab.research.google.com.
+\noindent
+\begin{tabular}{|m{5em}|m{3em}|c|c|c|c|c|c|}
+\hline
+Название датасета & Алго\-ритм &I & II & III & IV & V & Среднее  \\ \hline
+\hline
+
+\multirow{4}{3em}{Automobile} & SAM  & 97.81\%  & 86.85\%  & 89.3\%  & 96.68\%  & 98.26\%  & 93.78\%  \\ 
+%& cell5 & cell6 \\ 
+%& cell8 & cell9 \\ 
+%Automobile &  SAM TPOT & 97.81  & 86.85 & 89.3 & 96.68 & 98.26 \\
+%BlogFeedback & 280 & 60 021 \\
+%BostonHousing & 13 & 405 \\
+%Communities and Crime & 127 & 1 994 \\
+%Daily Demand Forecating & 12 & 60 \\
+%Facebook & 18 & 500 \\
+%Diamonds & 10 & 54 000 \\
+%Fish & 6 & 159 \\
+%Forestfires & 12 & 517 \\
+%Fundamentals & 77 & 1 562 \\
+%HousePrices\_1 & 79 & 1 460 \\
+%HousePrices\_2 & 9 & 20 640 \\
+%Parkinsons & 22 & 5 875 \\
+%Smoker & 0 & 0 \\
+%StudentsMarks & 32 & 395 \\
+%Tracks & 68 & 1058 \\
+%TracksPlus & 116 & 1 058 \\
+%WinequalityRed & 11 & 1 599 \\
+%WinequalityWhite & 11 & 4 898 \\
+%Winequality & 12 & 6 497 \\
+\hline
 
 
-\chapter{Выбор наборов гиперпараметров}
-В данной главе будет показан процесс выбора набора возможных значений для каждого гиперпараметра  алгоритмов машинного обучения, которые используются в данный программе. 
+\end{tabular}
 
-Для того чтобы программа находила более оптимальные значения гиперпараметров как можно быстрее требуется взять для каждого гиперпараметра такие наборы возможных значений, которые будут давать наилучшие результаты. Но некоторые алгоритмы имеют слишком много комбинаций значений, поэтому нужно каким-то образом их сократить.
+\begin{thebibliography}{3}
+\bibitem{VoronML}
+К. В. Воронцов. Математические методы обучения по прецедентам (теория обучения машин). http://www.machinelearning.ru/wiki/images/6/6d/Voron-ML-1.pdf
 
-Для этого будет проделан следующий порядок действий:
-\begin{enumerate}
-	\item Берётся набор датасетов определённого класса задач, на которых будут проверяться разные комбинации гиперпараметров.
-	\item Выбираем алгоритм машинного обучения для данного класса задач.
-	\item После чего берётся набор гиперпараметров, которые наиболее значимы для хорошего результата этого алгоритма.
-	\item Для каждого гиперпараметра из этого набора, берётся множество возможных значений, которое может принимать этот гиперпараметр, назовём его начальным набором значений.
-	\item После чего мы получаем множество всех возможных комбинаций значений гиперпараметров для выбранного алгоритма.
-	\item Через функцию \textbf{BayesSearchCV()} из библиотеки \textbf{scikit-optimize}, которая работает на принципах Байсовской оптимизации, на каждом датасеты будет испробовано 50 различных комбинаций гиперпараметров, через которые выше названная функция на каждой итерации будут стремиться улучшить точность алгоритма.
-	\item После того как результаты работы функции \textbf{BayesSearchCV()} на каждом датасеты будут получены, для каждой комбинации возможных значений гиперпараметров будет взято среднее арифметическое от их точности на каждом датасете. 
-	\item Получив среднею точность для испробованных комбинаций строится график, где по оси $ X $ будет номер комбинации, а по оси $ Y $ точность. 
-\end{enumerate}
-Получив такой график нужно снизить количество возможных комбинаций и при этом чтобы этих точек на графике осталось как можно больше и у них была хорошая точность, потому что эти точки, которые обозначают точность комбинации гиперпараметров, были получены на основании Байсовской оптимизации из-за чего можно предположить что эти комбинации гиперпараметров являются наиболее выгодными для получения высокой точности.
+\bibitem{AutoML}
+F. Hutter, L. Kotthoff, J. Vanschoren. Automated Machine Learning // Methods, Systems, Challenges // Springer, 2019
 
-Данную задачу можно решить следующим образом, посмотреть для каждого гиперпараметра какие его значения встречаются реже всего или они показывают плохую точность, и после чего их убрать. Таким образом получается итоговый набор значений гиперпараметров.
-После этого будет построен график с точками, которые остались(они будут обозначены синим), и точками,которые были потеряны(они будут обозначены красным).
-\section{Алгоритмы регрессии} 
-\input{4_regression.tex}
+\bibitem{AutoWEKA}
+C. Thornton, F. Hutter, H. H. Hoos, and K. Leyton-Brown. 2013. Auto-WEKA: combined selection and hyperparameter optimization of classification algorithms.
 
-\section{Алгоритмы классификации} 
-\input{4_classification.tex}
+\bibitem{HyperOpt}
+B. Komer, J. Bergstra, C. Eliasmith. Hyperopt-Sklearn // 2019
 
+\bibitem{AutoDNN}
+H. Mendoza, A. Klein, M. Feurer, J. T. Springenberg, M. Urban, M. Burkart, M. Dippel, M. Lindauer, and F. Hutter.
+Towards Automatically-Tuned Deep Neural Networks
 
+\bibitem{TPOT}
+R. S. Olson and J. H. Moore. TPOT: A Tree-Based Pipeline Optimization Tool for Automating Machine Learning
+
+\bibitem{AutoML_ICML}
+F. Hutter, R. Caruana, R. Bardenet,M. Bilenko, I. Guyon, B. Kegl, and H. Larochelle. AutoML 2014 @ ICML
+
+\bibitem{FeatureEngineering}
+Zheng A. Feature Engineering for Machine Learning [Text] / Zheng A., Casari A. //  O’Reilly Media, Inc., 1005 Gravenstein Highway North, Sebastopol, CA 95472. -- 2018.
+
+\bibitem{PreprocessingData}
+Emre R. Fundamental Techniques of Feature Engineering for Machine Learning [Электронный ресурс]. -- 2019. -- URL: https://towardsdatascience.com/feature-engineering-for-machine-learning-3a5e293a5114
+
+\bibitem{NSGA}
+Deb K. A Fast and Elitist Multiobjective Genetic Algorithm: NSGA-II [Текст] /  Deb K. Pratap A., Agarwal S., Meyarivan T. // IEEE Transactions on evolutionary computation, VOL. 6, NO. 2, APRIL 2002. -- P. 182–197.
+\end{thebibliography}
 \end{document}
